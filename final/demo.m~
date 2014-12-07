@@ -15,10 +15,10 @@ load face_p146_small.mat
 % % Pre-trained model with 1050 parts. Give best performance on localization, but very slow
 % load multipie_independent.mat
 
-% disp('Model visualization');
-% visualizemodel(model,1:13);
-% disp('press any key to continue');
-% pause;
+disp('Model visualization');
+visualizemodel(model,1:13);
+disp('press any key to continue');
+pause;
 
 
 % 5 levels for each octave
@@ -38,11 +38,10 @@ end
 % ims = dir('images/*.jpg');
 % ims = dir('hard/*.jpg');
 ims = dir('easy/*.jpg');
-for i = 1:2, % length(ims),
+for i = 1:  % length(ims),
     fprintf('testing: %d/%d\n', i, length(ims));
 %     im = imread(['images/' ims(i).name]);
-%     im = imread(['hard/' ims(i).name]);
-    im = imread(['easy/' ims(i).name]);
+    im = imread(['hard/' ims(i).name]);
     clf; imagesc(im); axis image; axis off; drawnow;
     
     tic;
@@ -52,9 +51,9 @@ for i = 1:2, % length(ims),
     dettime = toc;
     
     % show highest scoring one
-    figure,showfeaturepoints(im, bs(1),posemap),title('Highest scoring detection');
+    figure,showboxes(im, bs(1),posemap),title('Highest scoring detection');
     % show all
-%     figure,showboxes(im, bs,posemap),title('All detections above the threshold');
+    figure,showboxes(im, bs,posemap),title('All detections above the threshold');
     
     fprintf('Detection took %.1f seconds\n',dettime);
     disp('press any key to continue');
