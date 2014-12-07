@@ -1,0 +1,64 @@
+%% Given a face image, this function returns one or more struct instances
+% for each "real" face detected. Each struct has the following fields:
+%
+% 'Face': face bounding box
+% 'Nose': nose bounding box
+% 'LeftEye': left-eye bounding box
+%
+function [bboxStructs] = get_face_features(faceImage, feature)
+
+    faceDetector = vision.CascadeObjectDetector('FrontalFaceCART', 'MergeThreshold', 2);
+    
+    faces = faceDetector.step(faceImage);
+    bboxStructs = [];
+    
+    numFaces = size(faces,1);
+    fprintf(1, 'get_face_features: Found %d face(s)\n', numFaces);
+    
+    for i=1:numFaces
+ 
+        foundNose = false;
+ 
+        % Try different thresholds for finding a nose:
+        for t=15:-1:1
+            
+            fprintf('-- face: %d/%d @ feature threshold: %d\n', i, numFaces, t);
+            if foundNose
+                break;
+            end
+            
+            noseDetector = vision.CascadeObjectDetector('Nose', 'MergeThreshold', t, 'MinSize', [25, 25]);
+            noses        = noseDetector.step(faceImage);
+            numNoses     = size(noses, 1);
+
+            if numNoses == 0
+                continue;
+            end
+            
+            for j=1:numNoses
+                if  containsBBox(faces(i,:), noses(j,:))
+                    s           = struct('Face', faces(i,:), 'Nose', noses(j,:));
+                    bboxStructs = [bboxStructs ; s];
+                    foundNose   = true;
+                    break;
+                end
+            end
+        end
+    end
+end
+
+function [result] = containsBBox(outer, inner)
+    outX   = outer(1);
+    outY   = outer(2);
+    outW   = outer(3);
+    outH   = outer(4);
+    inX    = inner(1);
+    inY    = inner(2);
+    inW    = inner(3);
+    inH    = inner(4);
+    result = (inX > outX) && ...
+             (inY > outY) && ...
+             ((inX + inW) < (outX + outW)) && ...
+             ((inY + inH) < (outY + outH));
+end
+
