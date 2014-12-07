@@ -6,8 +6,8 @@
 %im = im2double(imread('data/hard/mj.jpg'));
 %im = im2double(imread('data/hard/0lliviaa.jpg'));
 %im = im2double(imread('data/hard/0b4e3684ebff3455f471bb82a0173f48.jpg'));
-%im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
-im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
+im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
+%im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
 %im = im2double(imread('data/hard/69daf49a8beb63dc35bf65b4e408cde9.jpg'));
 %im = im2double(imread('data/hard/314eeaedbe5732558841972afdbaf32f.jpg'));
@@ -32,20 +32,39 @@ hold off;
 
 %% 
 
-expand_by = 30;
-I = imcrop(im, [bbox(1:2) - (expand_by .* 0.5), bbox(3:4) + (expand_by .* 1)]);
-get_face_features(I);
+expand_by_px  = 30;
+[cropped_im, crop_rect] = imcrop(im, [bbox(1:2) - expand_by_px, bbox(3:4) + (expand_by_px .* 2)]);
+F = get_face_features(cropped_im);
 
-%%
+%% Finally, show everything found:
 
-detector = vision.CascadeObjectDetector('Mouth', 'MergeThreshold', 6);
-bboxes   = detector.step(imsharpen(imadjust(rgb2gray(I))));
-
-imshow(I);
+imshow(im);
 hold on;
-for i=1:size(bboxes, 1)
-    % Show the face bounding box
-    rectangle('Position', bboxes(i,:), 'EdgeColor', 'r', 'LineWidth', 2);
-end
-hold off;
 
+% Add the crop offsets back in the get the original positions:
+
+for i=1:size(F.Nose, 1)
+    R      = F.Nose(i,:);
+    R(1:2) = R(1:2) + crop_rect(1:2);
+    rectangle('Position', R, 'EdgeColor', 'r', 'LineWidth', 2);
+end
+
+for i=1:size(F.Mouth, 1)
+    R      = F.Mouth(i,:);
+    R(1:2) = R(1:2) + crop_rect(1:2);
+    rectangle('Position', R, 'EdgeColor', 'b', 'LineWidth', 2);
+end
+
+for i=1:size(F.LeftEye, 1)
+    R      = F.LeftEye(i,:);
+    R(1:2) = R(1:2) + crop_rect(1:2);
+    rectangle('Position', R, 'EdgeColor', 'g', 'LineWidth', 2);
+end
+
+for i=1:size(F.RightEye, 1)
+    R      = F.RightEye(i,:);
+    R(1:2) = R(1:2) + crop_rect(1:2);
+    rectangle('Position', R, 'EdgeColor', 'y', 'LineWidth', 2);
+end
+
+hold off;

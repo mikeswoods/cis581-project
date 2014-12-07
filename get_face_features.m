@@ -1,11 +1,21 @@
-%% 
+%% Returns a single struct of detected facial feature bounding boxes 
+% for the image.
+% 
+% Note: face_image is expected to contain a SINGLE face to run feature 
+% 
+% face_image = The face image to find the feature bounding boxes of
+% F          = A struct of the following form:
+% F.Nose     = 4x1 matrix bounding box for the nose ([x, y, w, h])
+% F.Mouth    = 4x1 matrix bounding box for the mouth ([x, y, w, h])
+% F.LeftEye  = 4x1 matrix bounding box for the left eye ([x, y, w, h])
+% F.RightEye = 4x1 matrix bounding box for the right eye ([x, y, w, h])
 %
-function [Z] = get_face_features(faceImage)
+function [F] = get_face_features(face_image)
     
     % Do some initial preprocessing of the image
     %I = imsharpen(imadjust(rgb2gray(faceImage)));
     %I = imadjust(rgb2gray(faceImage));
-    I = faceImage;
+    I = face_image;
     
     % First, try to find the nose the initial landmarks:
     nose             = get_single_feature(I, 'Nose');
@@ -31,39 +41,29 @@ function [Z] = get_face_features(faceImage)
         right_eye = prune_right_eye_candidates(nose_centroid, right_eye, [right_eye_x, right_eye_y]);
     end
 
-    %%%
-    
-    imshow(I);
-    hold on;
-    rectangle('Position', nose, 'EdgeColor', 'r', 'LineWidth', 2);
-    plot(nose_x, nose_y, 'o', 'Color', 'g');
-    
-    for i=1:size(mouth, 1)
-        rectangle('Position', mouth(i,:), 'EdgeColor', 'b', 'LineWidth', 2);
-    end
-    plot(mouth_x, mouth_y, 'o', 'Color', 'g');
+    % ---------------------------------------------------------------------
 
-    N = size(left_eye, 1);
-    for i=1:N
-        rectangle('Position', left_eye(i,:), 'EdgeColor', 'g', 'LineWidth', 2);
-    end
-    if N > 0
-        plot(left_eye_x, left_eye_y, 'o', 'Color', 'g');
-    end
+    % Finally, prune any boxes that are fully contained in other boxes:
+    mouth_temp     = mouth;
+    left_eye_temp  = left_eye;
+    right_eye_temp = right_eye;
     
-    N = size(right_eye, 1);
-    for i=1:size(right_eye, 1)
-        rectangle('Position', right_eye(i,:), 'EdgeColor', 'y', 'LineWidth', 2);
-    end
-    if N > 0
-        plot(right_eye_x, right_eye_y, 'o', 'Color', 'g');
-    end
-
-    hold off;
+    mouth     = prune_enclosed(mouth, [nose ; left_eye_temp; right_eye_temp]);
+    left_eye  = prune_enclosed(left_eye, [nose ; mouth_temp; right_eye_temp]);
+    right_eye = prune_enclosed(right_eye, [nose ; mouth_temp; left_eye_temp]);
+   
+    % ---------------------------------------------------------------------
+    
+    % Build a struct to hold all of our stuff:
+    
+    F = struct('Nose', nose ...
+              ,'Mouth', mouth ...
+              ,'LeftEye', left_eye ...
+              ,'RightEye', right_eye);
 end
 
 %%
-%
+% Prune mouth candidate bounding boxes using simple rules
 function [mouthsPassing] = prune_mouth_candidates(nose_centroid, mouths, mouth_centroid)
     if size(mouths, 1) == 1
         mouthsPassing = mouths;
@@ -76,7 +76,7 @@ function [mouthsPassing] = prune_mouth_candidates(nose_centroid, mouths, mouth_c
 end
 
 %%
-%
+% Prune left eye candidate bounding boxes using simple rules
 function [eyesPassing] = prune_left_eye_candidates(nose_centroid, eyes, eyes_centroid)
     if size(eyes, 1) == 1
         eyesPassing = eyes;
@@ -95,7 +95,7 @@ function [eyesPassing] = prune_left_eye_candidates(nose_centroid, eyes, eyes_cen
 end
 
 %%
-%
+% Prune right eye candidate bounding boxes using simple rules
 function [eyesPassing] = prune_right_eye_candidates(nose_centroid, eyes, eyes_centroid)
     if size(eyes, 1) == 1
         eyesPassing = eyes;
@@ -113,8 +113,27 @@ function [eyesPassing] = prune_right_eye_candidates(nose_centroid, eyes, eyes_ce
     end
 end
 
+%% Prune enclosed
+% Test to see if any one of target_bboxes is entirely enclosed
+% within any of the other bounding boxes in other_bboxes
+function [BBOX] = prune_enclosed(target_bboxes, other_bboxes)
+
+    BBOX = [];
+    M    = size(other_bboxes, 1);
+
+    for i=1:size(target_bboxes, 1)
+
+        T = target_bboxes(i,:);
+
+        if ~any(contains_box_wh(other_bboxes, repmat(T, M, 1)))
+            BBOX = [BBOX ; T];
+        end
+    end
+end
+
 %%
-%
+% Computes the centroid defined by the bounding box in the form:
+% [x, y, w, h]
 function [x,y] = bbox_centroid_wh(bbox)
 
     x1 = bbox(:,1);
@@ -126,14 +145,25 @@ function [x,y] = bbox_centroid_wh(bbox)
 end
 
 %%
-%
+% Computes the centroid defined by the bounding box in the form:
+% [x1, y1, x2, y2]
 function [x,y] = bbox_centroid_xy(bbox)
     x = (bbox(:,1) + bbox(:,3)) ./ 2;
     y = (bbox(:,2) + bbox(:,4)) ./ 2;
 end
 
 %%
+% Given a feature type like 'Nose' or 'Mouth' or any type detected by
+% Matlab's vision.CascaseObjectDetector, returns all bounding boxes found
+% as soon as the number of bounding boxes for a given threshold is greater
+% than zero.
 %
+% I = image
+% feature_type = 'Nose', 'Mouth', 'LeftEye', etc...
+% hi = High starting threshold value for CascaseObjectDetector's
+%      'MergeThreshold' parameter
+% lo  = Low ending threshold value for CascaseObjectDetector's
+%      'MergeThreshold' parameter
 function [BBOX] = get_any_feature(I, feature_type, hi, lo)
 
     BBOX = [];
@@ -156,7 +186,16 @@ function [BBOX] = get_any_feature(I, feature_type, hi, lo)
 end
 
 %%
+% Given a feature type like 'Nose' or 'Mouth' or any type detected by
+% Matlab's vision.CascaseObjectDetector, returns a single bounding box
+% found when exclusively one bounding is detected for a given threshold 
 %
+% I = image
+% feature_type = 'Nose', 'Mouth', 'LeftEye', etc...
+% hi = High starting threshold value for CascaseObjectDetector's
+%      'MergeThreshold' parameter
+% lo  = Low ending threshold value for CascaseObjectDetector's
+%      'MergeThreshold' parameter
 function [BBOX] = get_single_feature(I, feature_type, hi, lo)
 
     BBOX = [];
@@ -179,19 +218,22 @@ function [BBOX] = get_single_feature(I, feature_type, hi, lo)
 end
 
 %%
-%
-function [result] = contains_box(outer, inner)
-    outX   = outer(1);
-    outY   = outer(2);
-    outW   = outer(3);
-    outH   = outer(4);
-    inX    = inner(1);
-    inY    = inner(2);
-    inW    = inner(3);
-    inH    = inner(4);
-    result = (inX > outX) && ...
-             (inY > outY) && ...
-             ((inX + inW) < (outX + outW)) && ...
-             ((inY + inH) < (outY + outH));
+% Tests if the bounding box defined by inner is fully contained by outer
+% Note: Assumes all boxes have the form [x1, y1, x2, y2] 
+function [result] = contains_box_xy(outer, inner)
+    result = outer(:,1) <= inner(:,1) & ... % outer.x1 <= inner.x1
+             outer(:,2) <= inner(:,2) & ... % outer.y1 <= inner.y1
+             outer(:,3) >= inner(:,3) & ... % outer.x2 >= inner.x2
+             outer(:,4) >= inner(:,4);       % outer.y2 >= inner.y2
 end
 
+%%
+% Tests if the bounding box defined by inner is fully contained by outer
+% Note: Assumes all boxes have the form [x, y, w, h]
+function [result] = contains_box_wh(outer, inner)
+
+    result = outer(:,1) <= inner(:,1) & ...
+             outer(:,2) <= inner(:,2) & ...
+             (outer(:,1) + outer(:,3)) >= (inner(:,1) + inner(:,3)) & ...
+             (outer(:,2) + outer(:,4)) >= (inner(:,2) + inner(:,4));
+end
