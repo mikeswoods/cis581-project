@@ -1,6 +1,6 @@
 %% Detect face features using the software written X. Zhu and D. Ramanan.
 % 
-function [X,Y] = detect_faces(inputImage, model, nms_threshold, interval)
+function [X,Y,BOX] = detect_faces(inputImage, model, nms_threshold, interval)
 %
 % This function makes use of the face detection software presented in
 %
@@ -16,7 +16,7 @@ function [X,Y] = detect_faces(inputImage, model, nms_threshold, interval)
 % interval      = Model interval (? not sure what this does)
 %
 % [X,Y]         = (x,y) feature points
-%
+% BOX           = Bounding box of the form :[x1 y1 x2 y2]
     addpath('final');
  
     if nargin ~= 4
@@ -33,7 +33,8 @@ function [X,Y] = detect_faces(inputImage, model, nms_threshold, interval)
     % Use the pre-trained model with 146 parts if model is not explictly
     % specified
     if nargin ~= 2
-        load face_p146_small.mat;
+        data  = load('final/face_p146_small.mat');
+        model = data.model;
     end
     
     % 5 levels for each octave
@@ -57,7 +58,8 @@ function [X,Y] = detect_faces(inputImage, model, nms_threshold, interval)
  
     %bs.xy is a Nx4 matrix, where each row is bounding box of the form:
     % [x1, y1, x2, y2]
-    
-    X = (bs.xy(:,1) + bs.xy(:,3)) ./ 2;
-    Y = (bs.xy(:,2) + bs.xy(:,4)) ./ 2;
+
+    X   = (bs.xy(:,1) + bs.xy(:,3)) ./ 2;
+    Y   = (bs.xy(:,2) + bs.xy(:,4)) ./ 2;
+    BOX = [min(X), min(Y), max(X), max(Y)];
 end
