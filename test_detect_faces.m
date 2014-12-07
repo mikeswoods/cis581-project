@@ -53,20 +53,20 @@ plot(ptVis,'Color','green');
 
 % figure; imshow(I3);
 
-d1 = rgb2gray(im2);  %# Load the image, scale from 0 to 1
-subplot(2,2,1); imshow(d1); title('d1');    %# Plot the original image
-d = edge(d1,'canny',0.9);                    %# Perform Canny edge detection
-subplot(2,2,2); imshow(d); title('d');      %# Plot the edges
-ds = bwareaopen(d,40);                      %# Remove small edge objects
-subplot(2,2,3); imshow(ds); title('ds');    %# Plot the remaining edges
-iout = d1;
-BW = ds;
-iout(:,:,1) = iout;                           %# Initialize red color plane
-iout(:,:,2) = iout(:,:,1);                    %# Initialize green color plane
-iout(:,:,3) = iout(:,:,1);                    %# Initialize blue color plane
-iout(:,:,2) = min(iout(:,:,2) + BW, 1.0);     %# Add edges to green color plane
-iout(:,:,3) = min(iout(:,:,3) + BW, 1.0);     %# Add edges to blue color plane
-subplot(2,2,4); imshow(iout); title('iout');  %# Plot the resulting image
+% d1 = rgb2gray(im2);  %# Load the image, scale from 0 to 1
+% subplot(2,2,1); imshow(d1); title('d1');    %# Plot the original image
+% d = edge(d1,'canny',0.9);                    %# Perform Canny edge detection
+% subplot(2,2,2); imshow(d); title('d');      %# Plot the edges
+% ds = bwareaopen(d,40);                      %# Remove small edge objects
+% subplot(2,2,3); imshow(ds); title('ds');    %# Plot the remaining edges
+% iout = d1;
+% BW = ds;
+% iout(:,:,1) = iout;                           %# Initialize red color plane
+% iout(:,:,2) = iout(:,:,1);                    %# Initialize green color plane
+% iout(:,:,3) = iout(:,:,1);                    %# Initialize blue color plane
+% iout(:,:,2) = min(iout(:,:,2) + BW, 1.0);     %# Add edges to green color plane
+% iout(:,:,3) = min(iout(:,:,3) + BW, 1.0);     %# Add edges to blue color plane
+% subplot(2,2,4); imshow(iout); title('iout');  %# Plot the resulting image
 
 
 
