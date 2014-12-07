@@ -52,3 +52,67 @@ function side_by_side(im1, im2, bbox1, bbox2, points1, points2)
    % plot(points2(:,1), points2(:,2), 'o', 'Color', 'g');
   
 end
+
+%% 
+% Returns 4x2 matrix of top, right, bottom, left padding values for the
+% described matrix based on the given dimensions [r c] in dims
+function [M] = borders(dims, n)
+    r      = dims(1);
+    c      = dims(2);
+    alongR = linspace(1, r, n);
+    alongC = linspace(1, c, n);
+    TOP    = [alongC ; repmat(1,1,n)]';
+    BOTTOM = [alongC ; repmat(r,1,n)]';
+    LEFT   = [repmat(1,1,n) ; alongR]';
+    RIGHT  = [repmat(c,1,n) ; alongR]';
+    M      = [TOP ; RIGHT ; BOTTOM ; LEFT];
+end
+
+%% 
+% Pads the given image with zeros according to the given width specifers
+function [J] = zeropad(I, north, south, east, west)
+    NS = max(north, south);
+    WE = max(west, east);
+    J  = padarray(I,[NS WE]);
+    dN = NS - north; 
+    dS = NS - south;
+    dE = WE - east;
+    dW = WE - west;
+    if dN > 0
+        J = J(dN+1:end,:,:); 
+    end
+    if dS > 0
+        J = J(1:end-dS,:,:);
+    end
+    if dE > 0 
+        J = J(:,1:end-dE,:);
+    end
+    if dW > 0
+        J = J(:,dW+1:end,:); 
+    end
+end
+
+%% 
+% Match the dimensions of the given imput and return padding info
+function [U, V, padU, padV] = matchdim(P, Q, padder)
+    [r1,c1,~] = size(P);
+    [r2,c2,~] = size(Q);
+    rMax      = max(r1,r2);
+    cMax      = max(c1,c2);
+    % Pad the images so they have matching dimensions:
+    nsP  = (rMax - r1) ./ 2;
+    weP  = (cMax - c1) ./ 2;
+    padU = struct('N', floor(nsP) ...
+                 ,'S', ceil(nsP) ...
+                 ,'E', floor(weP) ...
+                 ,'W', ceil(weP));
+    U = padder(P, padU.N, padU.S, padU.E, padU.W);    
+    nsQ  = (rMax - r2) ./ 2;
+    weQ  = (cMax - c2) ./ 2;
+    padV = struct('N', floor(nsQ) ...
+                 ,'S', ceil(nsQ) ...
+                 ,'E', floor(weQ) ...
+                 ,'W', ceil(weQ));
+    V = padder(Q, padV.N, padV.S, padV.E, padV.W);
+end
+
