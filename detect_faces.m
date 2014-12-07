@@ -51,7 +51,7 @@ function [X,Y,BOX] = detect_faces(inputImage, model, nms_threshold, interval)
     detectTime = toc;
 
     fprintf(1, 'done in %f seconds\n> Clipping...\n', detectTime);
-    bs = clipboxes(inputImage, bs);
+    bs = clipboxes(inputImage, bs(1));
 
     fprintf(1, '> Suppressing...\n');
     bs = nms_face(bs, nms_threshold);
