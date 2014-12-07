@@ -53,9 +53,9 @@ plot(ptVis,'Color','green');
 
 % figure; imshow(I3);
 
-d1 = rgb2gray(im2);  %# Load the image, scale from 0 to 1
+d1 = im;  %# Load the image, scale from 0 to 1
 subplot(2,2,1); imshow(d1); title('d1');    %# Plot the original image
-d = edge(d1,'canny',0.9);                    %# Perform Canny edge detection
+d = edge(d1,'canny',.6);                    %# Perform Canny edge detection
 subplot(2,2,2); imshow(d); title('d');      %# Plot the edges
 ds = bwareaopen(d,40);                      %# Remove small edge objects
 subplot(2,2,3); imshow(ds); title('ds');    %# Plot the remaining edges
