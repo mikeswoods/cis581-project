@@ -16,8 +16,8 @@ im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
 
 %%
 
-addpath('final');
-data      = load('final/face_p146_small.mat');
+addpath('fitw_detect');
+data      = load('fitw_detect/face_p146_small.mat');
 model     = data.model;
 [X,Y,BOX] = detect_faces(im, model);
 bbox      = [BOX(1), BOX(2), BOX(3) - BOX(1), BOX(4) - BOX(2)];
