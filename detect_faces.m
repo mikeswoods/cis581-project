@@ -1,6 +1,6 @@
 %% Detect face features using the software written X. Zhu and D. Ramanan.
 % 
-function [X,Y,BOX] = detect_faces(inputImage, model, nms_threshold, interval)
+function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, interval)
 %
 % This function makes use of the face detection software presented in
 %
@@ -17,6 +17,7 @@ function [X,Y,BOX] = detect_faces(inputImage, model, nms_threshold, interval)
 %
 % [X,Y]         = (x,y) feature points
 % BOX           = Bounding box of the form :[x1 y1 x2 y2]
+% ORIENTATION   = 
     addpath('final');
  
     if nargin ~= 4
@@ -51,15 +52,26 @@ function [X,Y,BOX] = detect_faces(inputImage, model, nms_threshold, interval)
     detectTime = toc;
 
     fprintf(1, 'done in %f seconds\n> Clipping...\n', detectTime);
-    bs = clipboxes(inputImage, bs(1));
+    
+    bs = clipboxes(inputImage, bs);
 
     fprintf(1, '> Suppressing...\n');
     bs = nms_face(bs, nms_threshold);
- 
+
+    % define the mapping from view-specific mixture id to viewpoint
+    if length(model.components)==13 
+        posemap = 90:-15:-90;
+    elseif length(model.components)==18
+        posemap = [90:-15:15 0 0 0 0 0 0 -15:-15:-90];
+    else
+        error('Can not recognize this model');
+    end
+
     %bs.xy is a Nx4 matrix, where each row is bounding box of the form:
     % [x1, y1, x2, y2]
 
     X   = (bs.xy(:,1) + bs.xy(:,3)) ./ 2;
     Y   = (bs.xy(:,2) + bs.xy(:,4)) ./ 2;
     BOX = [min(X), min(Y), max(X), max(Y)];
+    ORIENTATION = posemap(bs.c);
 end
