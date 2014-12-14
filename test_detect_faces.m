@@ -5,7 +5,8 @@ addpath('final');
 data      = load('final/face_p146_small.mat');
 model     = data.model;
 % im        = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
-ime        = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
+%ime        = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
+ime        = im2double(imread('data/Mike/zero-degrees.jpg'));
 % im        = im2double(imread('data/hard/jennifer_xmen.jpg'));
 im        = im2double(imread('data/hard/0lliviaa.jpg'));
 
