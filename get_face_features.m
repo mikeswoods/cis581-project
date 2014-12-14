@@ -21,7 +21,7 @@ function [F] = get_face_features(face_image)
     nose             = get_single_feature(I, 'Nose');
     [nose_x, nose_y] = bbox_centroid_wh(nose);
     nose_centroid    = [nose_x, nose_y];
-    
+
     % Find all mouth candidates:
     mouth              = get_any_feature(I, 'Mouth');
     [mouth_x, mouth_y] = bbox_centroid_wh(mouth);

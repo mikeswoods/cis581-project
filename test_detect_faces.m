@@ -1,19 +1,22 @@
 %%
 clear all;
 dialateAmount = 30;
-addpath('final');
-data      = load('final/face_p146_small.mat');
+addpath('fitw_detect');
+data      = load('fitw_detect/face_p146_small.mat');
 model     = data.model;
-% im        = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
+ im        = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 ime        = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 % im        = im2double(imread('data/hard/jennifer_xmen.jpg'));
-im        = im2double(imread('data/hard/0lliviaa.jpg'));
+%im        = im2double(imread('data/hard/0lliviaa.jpg'));
 
 % faceDetector = vision.CascadeObjectDetector();
 % bbox         = step(faceDetector, ime);
 % bbox = dialate_bbox( bbox, dialateAmount );
 % ime          = imcrop(ime, bbox);
-[X,Y,BOX] = detect_faces(ime, model, 0.2);
+[X,Y,BOX,ORIENTATION] = detect_faces(im, model, 0.2);
+ORIENTATION
+
+%%
 
 % faceDetector = vision.CascadeObjectDetector();
 % bbox         = step(faceDetector, im);

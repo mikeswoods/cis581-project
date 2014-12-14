@@ -18,7 +18,7 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
 % [X,Y]         = (x,y) feature points
 % BOX           = Bounding box of the form :[x1 y1 x2 y2]
 % ORIENTATION   = 
-    addpath('final');
+    addpath('fitw_detect');
  
     if nargin ~= 4
         % Used by demo.m ("5 levels for each octave")
@@ -34,7 +34,7 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
     % Use the pre-trained model with 146 parts if model is not explictly
     % specified
     if nargin ~= 2
-        data  = load('final/face_p146_small.mat');
+        data  = load('fitw_detect/face_p146_small.mat');
         model = data.model;
     end
     
