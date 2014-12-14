@@ -1,0 +1,72 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,amscd}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{mathrsfs}
+\usepackage{xcolor}
+\usepackage{dsfont}
+\usepackage{graphicx}
+\usepackage[framed]{mcode}
+\usepackage[margin=3cm]{geometry}
+\setlength{\parindent}{0.0in}
+\setlength{\parskip}{0.05in}
+
+% Edit these as appropriate
+\newcommand\course{CIS 581}
+\newcommand\semester{Fall 2014}     % <-- current semester
+\newcommand\yourname{Michael O'Meara, Mike Woods} % <-- your name
+\newcommand\hwdate{Due: December 15, 2014}           % <-- HW due date
+
+\newenvironment{answer}[1]{
+  \subsubsection*{Our #1}
+}
+
+
+\pagestyle{fancyplain}
+\headheight 25pt
+
+\lhead{\\\course\ --- \semester}
+\chead{\textbf{\Large Project Checkpoint \hwnum}}
+\rhead{\hwdate}
+
+\yourname\\
+
+\headsep 5pt
+
+\begin{document}
+
+\begin{answer}{approach}
+
+\begin{enumerate}
+
+\item Our approach initially involved using the code published by Zhu and Ramanan to perform landmark detection on the input faces. So far, one of most challenging sub-problems we've encountered has to do with obtaining a clear outline of the face, specifically the jawline. The code by Zhu and Ramanan performs this task fairly well in most test images we’ve tried.
+ 
+\item Using the initial points, we then compute the convex hull. This yields a polygonal mask which we will later use to extract the actual face from the source image for warping. 
+
+\item Additionally, we also construct a bounding box/region of interest based on the initial set of detected facial points which we use to perform localized feature detection, identifying the nose, eyes, and mouth. The location of the nose is also used to perform left eye/right eye disambiguation and remove false positives. 
+
+\item Our next task is to detect the best corners within the local feature bounding boxes (most likely on the eyes and mouth) of the source and target images in order to prune dissimilar correspondence points in both the target and source images. 
+
+\item Then, our goal is to use the best correspondence points to do a Delaunay triangulation morphing of our convex hull from the source into the masked part of the target image.
+
+\item Finally, we will use Laplacian blending to ensure a smooth transition from our face into the surrounding target image.
+
+\end{enumerate}
+
+\end{answer}
+
+\begin{answer}{results}
+
+blah
+%\begin{figure}[h!]
+%        \caption{Corner detection (before anms)}
+%\center
+%        \includegraphics[scale=0.36]{before_anms3}
+%\end{figure}
+
+
+\end{answer}
+
+\end{document}
