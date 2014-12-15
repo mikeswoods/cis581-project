@@ -1,7 +1,20 @@
-%%
+%% 
+% Matches pairs of points in X and Y using shape context descriptors
 %
+% Adapted from code at https://www.eecs.berkeley.edu/Research/Projects/CS/vision/shape/sc_digits.html
+% by Serge Belongie, Jitendra Malik and Jan Puzicha
 %
-function shape_context_match(X, Y, n_iter, nbins_theta, nbins_r)
+% X           = Points in image 1 to match to points in image 2
+% Y           = Points in image 2 to match to points in image 1
+% iterations  = Number of iterations to run for. If omitted, defaults to 5
+% nbins_theta = NUmber of theta bins. If omitted, defaults to 12
+% nbins_r     = Number of r bins. If omitted, defaults to 5
+% debug       = Render debug matching output. If omitted, defaults to false
+function [M] = shape_context_match(X, Y, iterations, nbins_theta, nbins_r, debug)
+
+    if nargin ~= 6
+        debug = false;
+    end
 
     if nargin ~= 5
         nbins_r = 5;
@@ -12,7 +25,7 @@ function shape_context_match(X, Y, n_iter, nbins_theta, nbins_r)
     end
     
     if nargin ~= 3
-        n_iter = 5;
+        iterations = 5;
     end
 
     nsamp1 = size(X,1);
@@ -42,96 +55,113 @@ function shape_context_match(X, Y, n_iter, nbins_theta, nbins_r)
     out_vec_2 = zeros(1,nsamp2);
 
     while s
+        if debug
+            disp(['iter=' int2str(k)])
+        end
 
-       disp(['iter=' int2str(k)])
+        % compute shape contexts for (transformed) model
+        [BH1,mean_dist] = sc_compute(Xk', zeros(1,nsamp1), [], nbins_theta, nbins_r, r_inner, r_outer, out_vec_1);
 
-       % compute shape contexts for (transformed) model
-       [BH1,mean_dist] = sc_compute(Xk', zeros(1,nsamp1), [], nbins_theta, nbins_r, r_inner, r_outer, out_vec_1);
+        % compute shape contexts for target, using the scale estimate from
+        % the warped model
+        % Note: this is necessary only because out_vec_2 can change on each
+        % iteration, which affects the shape contexts.  Otherwise, Y does
+        % not change.
+        [BH2,~] = sc_compute(Y', zeros(1,nsamp2), mean_dist, nbins_theta, nbins_r, r_inner, r_outer, out_vec_2);
 
-       % compute shape contexts for target, using the scale estimate from
-       % the warped model
-       % Note: this is necessary only because out_vec_2 can change on each
-       % iteration, which affects the shape contexts.  Otherwise, Y does
-       % not change.
-       [BH2,~] = sc_compute(Y', zeros(1,nsamp2), mean_dist, nbins_theta, nbins_r, r_inner, r_outer, out_vec_2);
+        % compute regularization parameter
+        beta_k = (mean_dist ^ 2) * beta_init * r^(k-1);
 
-       % compute regularization parameter
-       beta_k = (mean_dist ^ 2) * beta_init * r^(k-1);
+        % compute pairwise cost between all shape contexts
+        costmat = hist_cost_2(BH1, BH2);
 
-       % compute pairwise cost between all shape contexts
-       costmat = hist_cost_2(BH1, BH2);
+        % pad the cost matrix with costs for dummies
+        nptsd    = nsamp1 + ndum1;
+        costmat2 = eps_dum * ones(nptsd, nptsd);
+        costmat2(1:nsamp1,1:nsamp2) = costmat;
 
-       % pad the cost matrix with costs for dummies
-       nptsd    = nsamp1 + ndum1;
-       costmat2 = eps_dum * ones(nptsd, nptsd);
-       costmat2(1:nsamp1,1:nsamp2) = costmat;
+        % Run the Hungarian algorithm to obtain a 1-to-1 match between point
+        % sets
+        cost_vector = hungarian(costmat2);
 
-       % Run the Hungarian algorithm to obtain a 1-to-1 match between point
-       % sets
-       cost_vector = hungarian(costmat2);
+        % update outlier indicator vectors
+        [~,cvec2] = sort(cost_vector);
+        out_vec_1 = cvec2(1:nsamp1)>nsamp2;
+        out_vec_2 = cost_vector(1:nsamp2)>nsamp1;
 
-       % update outlier indicator vectors
-       [~,cvec2] = sort(cost_vector);
-       out_vec_1 = cvec2(1:nsamp1)>nsamp2;
-       out_vec_2 = cost_vector(1:nsamp2)>nsamp1;
+        % Format versions of Xk and Y that can be plotted with outliers'
+        % correspondences missing
+        X2 = NaN(nptsd, 2);
+        X2(1:nsamp1,:) = Xk;
+        X2 = X2(cost_vector, :);
 
-       % Format versions of Xk and Y that can be plotted with outliers'
-       % correspondences missing
-       X2 = NaN(nptsd, 2);
-       X2(1:nsamp1,:) = Xk;
-       X2 = X2(cost_vector, :);
- 
-       Xnext = NaN(nptsd, 2);
-       Xnext(1:nsamp1,:) = X;
-       Xnext = Xnext(cost_vector,:);
- 
-       Y2 = NaN(nptsd, 2);
-       Y2(1:nsamp2,:) = Y;
+        Xnext = NaN(nptsd, 2);
+        Xnext(1:nsamp1,:) = X;
+        Xnext = Xnext(cost_vector,:);
 
-       % extract coordinates of non-dummy correspondences and use them
-       % to estimate transformation
-       ind_good = find(~isnan(Xnext(1:nsamp1,1)));
+        Y2 = NaN(nptsd, 2);
+        Y2(1:nsamp2,:) = Y;
 
-       % NOTE: Gianluca said he had to change nsamp1 to nsamp2 in the
-       % preceding line to get it to work properly when nsamp1~=nsamp2 and
-       % both sides have outliers...
-       n_good = length(ind_good);
-       X3b    = Xnext(ind_good,:);
-       Y3     = Y2(ind_good,:);
+        % extract coordinates of non-dummy correspondences and use them
+        % to estimate transformation
+        ind_good = find(~isnan(Xnext(1:nsamp1,1)));
 
-       if true
-          % show the correspondences between the untransformed images
-          figure(3)
-          plot(X(:,1),X(:,2),'b+',Y(:,1),Y(:,2),'ro')
-          hold on
-          plot([Xnext(:,1) Y2(:,1)]',[Xnext(:,2) Y2(:,2)]','g-')
-          hold off
-          title([int2str(n_good) ' correspondences (unwarped X)'])
-          drawnow;
-       end
+        % NOTE: Gianluca said he had to change nsamp1 to nsamp2 in the
+        % preceding line to get it to work properly when nsamp1~=nsamp2 and
+        % both sides have outliers...
+        n_good = length(ind_good);
+        X3b    = Xnext(ind_good,:);
+        Y3     = Y2(ind_good,:);
 
-       % Estimate regularized TPS transformation
-       [cx,cy] = bookstein(X3b,Y3,beta_k);
 
-       % warp each coordinate
-       fx_aff=cx(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
-       d2 = max(pdist2(X3b, X),0);
-       U  = d2 .* log(d2 + eps);
-       fx_wrp=cx(1:n_good)'*U;
-       fx=fx_aff+fx_wrp;
-       fy_aff=cy(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
-       fy_wrp=cy(1:n_good)'*U;
-       fy=fy_aff+fy_wrp;
+        % Find reordered X indices: all matches should be one-to-one
+        N = size(X, 1);
+        M = NaN(N, 1);
+        for i=1:N
+            for j=1:N
+                if isequal(X(i,:), Xnext(j,:))
+                    M(i) = j;
+                end
+            end
+        end
+        
+        %[X, Xnext, M, Y]
+    
+        if debug
+            % Show the correspondences between the untransformed images
 
-       % update Xk for the next iteration
-       Xk = [fx; fy]';
+            plot(X(:,1),X(:,2),'b+',Y(:,1),Y(:,2),'ro')
+            hold on
 
-       % stop early if shape context score is sufficiently low
-       if k >= n_iter
-          s = 0;
-       else
-          k = k + 1;
-       end
+            plot([Xnext(:,1) Y2(:,1)]',[Xnext(:,2) Y2(:,2)]','g-')
+            hold off
+
+            title([int2str(n_good) ' correspondences (unwarped X)'])
+            drawnow;
+        end
+
+        % Estimate regularized TPS transformation
+        [cx,cy] = bookstein(X3b, Y3, beta_k);
+
+        % warp each coordinate
+        fx_aff=cx(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
+        d2 = max(pdist2(X3b, X),0);
+        U  = d2 .* log(d2 + eps);
+        fx_wrp=cx(1:n_good)'*U;
+        fx=fx_aff+fx_wrp;
+        fy_aff=cy(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
+        fy_wrp=cy(1:n_good)'*U;
+        fy=fy_aff+fy_wrp;
+
+        % update Xk for the next iteration
+        Xk = [fx; fy]';
+       
+        % stop early if shape context score is sufficiently low
+        if k >= iterations
+            s = 0;
+        else
+            k = k + 1;
+        end
     end
 end
 
