@@ -1,10 +1,7 @@
-% Written by Michael O'Meara
-function [ k ] = U( r )
-
-r1 = r;
-% realmin is matlab's way of getting really close to zero
-r1(r==0)=realmin;
-k = 2*r.^2.*log(r1);
-
+%% U(r) = r^2 * log(r^2)
+function [out] = U(r)
+    r2  = r.^2;
+    out = r2 .* log(r2);
+    % Convert all NaNs to zeros before returning
+    out(isnan(out)) = 0.0;
 end
-

@@ -1,52 +1,43 @@
-% Written by Michael O'Meara
-function [ morphed_im ] = morph_tps( im_source, a1_x, ax_x, ay_x, w_x, ...
-    a1_y, ax_y, ay_y, w_y, ctr_pts, sz )
+%% Morphing via thin plate splines
+function [morphed_im] = morph_tps(im_source ...
+                                 ,a1_x ...
+                                 ,ax_x ...
+                                 ,ay_x ...
+                                 ,w_x ...
+                                 ,a1_y ...
+                                 ,ax_y ...
+                                 ,ay_y ...
+                                 ,w_y ...
+                                 ,ctr_pts ...
+                                 ,sz)
+    r = sz(1);
+    c = sz(2);  
 
-imgSz = size(im_source);
-f_x = zeros(imgSz(1),imgSz(2));
-f_y = zeros(imgSz(1),imgSz(2));
-p = size(ctr_pts,1);
+    % Generate all (i,j) pixel coordinate pairs
+    coords = combvec(1:c,1:r)';
+    % We're using k control points
+ 
+    k = size(ctr_pts,1);
+    % and n (i,j) discrete pixels
+    n = size(coords,1);
+ 
+    % Compute kernerl matrix K
+    K  = repmat(ctr_pts, n, 1) - reprow(coords, k);
+    K  = U(reshape(sqrt(dot(K, K, 2)), k, n)');
+    
+    % And weights in the x & y directions
+    WX = sum(K .* repmat(w_x', n, 1), 2);
+    WY = sum(K .* repmat(w_y', n, 1), 2);
 
-K = zeros(p,1);
+    % Find the remapped coordinates (i,j) in the intermediate image (i,j) 
+    % to the coordinates (u,v) in the orignal image
+    u  = a1_x + (ax_x .* coords(:,1)) + (ay_x .* coords(:,2)) + WX;
+    v  = a1_y + (ax_y .* coords(:,1)) + (ay_y .* coords(:,2)) + WY;
 
-for h=1:sz(1)
-    for w=1:sz(2)
-%         X = repmat(w, p, 1);
-%         Y = repmat(h, p, 1);
-%         K = U(sqrt((ctr_pts(:,1)-X).^2 + (ctr_pts(:,2)-Y).^2));
-        for i=1:p
-            K(i) = U(norm(ctr_pts(i,:) - [w,h],2));
-        end
-
-        px = a1_x + ax_x*w + ay_x*h + K'*w_x;
-        if px > imgSz(2)
-            px = imgSz(2);
-        end
-        if px < 1
-            px = 1;
-        end
-        f_x(h,w) = px;
-        py = a1_y + ax_y*w + ay_y*h + K'*w_y;
-        if py > imgSz(1)
-            py = imgSz(1);
-        end
-        if py < 1
-            py = 1;
-        end
-        f_y(h,w) = py;
-    end
+    % Clamp u & v then round to get proper integer coordinates
+    morphed_im = warp(im_source ...
+                     ,coords(:,2) ...
+                     ,coords(:,1) ...
+                     ,round(v) ...
+                     ,round(u));
 end
-
-% fx = round(f_x);
-% fy = round(f_y);
-
-morphed_im = zeros(sz(1),sz(2), 3);
-for i=1:3
-    morphed_im(:,:,i) = interp2(double(im_source(:,:,i)), f_x, f_y);
-    % morphed_im(:,:,i) = im_source(uint8(f_x), uint8(f_y), i); 
-end
-
-
-
-end
-

@@ -1,20 +1,36 @@
-% Written by Michael O'Meara
-function [ morphed_im ] = morph_tps_wrapper( img_source, img_dest, ...
-    p_source, p_dest, warp_frac, dissolve_frac )
+%% Thin-plate parameter estimation run-wrapper
+function [output] = morph_tps_wrapper(im1, im2, P, Q, warp_frac, dissolve_frac)
+    
+    [im1,im2,Ppad,Qpad] = matchdim(im1, im2, @zeropad);
 
-ctr_pts = (1-warp_frac)*p_source + warp_frac*p_dest;
+    P(:,1) = P(:,1) + Ppad.S;
+    P(:,2) = P(:,2) + Ppad.W;
+    Q(:,1) = Q(:,1) + Qpad.S;
+    Q(:,2) = Q(:,2) + Qpad.W;
+    P      = [P ; borders(size(im1),3)];
+    Q      = [Q ; borders(size(im2),3)];
 
-[h,w,~] = size(img_dest);
+    I       = lerp(P, Q, warp_frac);
+    [r,c,~] = size(im1);
+    
+    [PR_a1, PR_ax, PR_ay, PR_w] = est_tps(I, P(:,1));
+    [PC_a1, PC_ax, PC_ay, PC_w] = est_tps(I, P(:,2));
 
-[a1_x,ax_x,ay_x,w_x] = est_tps(ctr_pts, p_source(:,1));
-[a1_y,ax_y,ay_y,w_y] = est_tps(ctr_pts, p_source(:,2));
-morphed_im1 = morph_tps(img_source, a1_x, ax_x, ay_x, w_x, a1_y, ax_y, ay_y, w_y, ctr_pts, [h,w]);
+    S = morph_tps(im1 ...
+                 ,PR_a1, PR_ax, PR_ay, PR_w ...
+                 ,PC_a1, PC_ax, PC_ay, PC_w ...
+                 ,I ...
+                 ,[r c]);
+             
+    [QR_a1, QR_ax, QR_ay, QR_w] = est_tps(I, Q(:,1));
+    [QC_a1, QC_ax, QC_ay, QC_w] = est_tps(I, Q(:,2));
 
-[a1_x,ax_x,ay_x,w_x] = est_tps(ctr_pts, p_dest(:,1));
-[a1_y,ax_y,ay_y,w_y] = est_tps(ctr_pts, p_dest(:,2));
-morphed_im2 = morph_tps(img_dest, a1_x, ax_x, ay_x, w_x, a1_y, ax_y, ay_y, w_y, ctr_pts, [h,w]);
-
-morphed_im = uint8((1-dissolve_frac)*morphed_im1 + dissolve_frac*morphed_im2);
-
+    T = morph_tps(im2 ...
+                 ,QR_a1, QR_ax, QR_ay, QR_w ...
+                 ,QC_a1, QC_ax, QC_ay, QC_w ...
+                 ,I ...
+                 ,[r c]);
+    
+    output = lerp(S, T, dissolve_frac);
 end
 

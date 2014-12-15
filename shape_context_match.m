@@ -7,8 +7,8 @@
 % X           = Points in image 1 to match to points in image 2
 % Y           = Points in image 2 to match to points in image 1
 % iterations  = Number of iterations to run for. If omitted, defaults to 5
-% nbins_theta = NUmber of theta bins. If omitted, defaults to 12
-% nbins_r     = Number of r bins. If omitted, defaults to 5
+% nbins_theta = Number of quantized angle (theta) bins. If omitted, defaults to 12
+% nbins_r     = Number of log-distance (r) bins. If omitted, defaults to 5
 % debug       = Render debug matching output. If omitted, defaults to false
 function [M] = shape_context_match(X, Y, iterations, nbins_theta, nbins_r, debug)
 
@@ -113,7 +113,6 @@ function [M] = shape_context_match(X, Y, iterations, nbins_theta, nbins_r, debug
         X3b    = Xnext(ind_good,:);
         Y3     = Y2(ind_good,:);
 
-
         % Find reordered X indices: all matches should be one-to-one
         N = size(X, 1);
         M = NaN(N, 1);
@@ -144,14 +143,14 @@ function [M] = shape_context_match(X, Y, iterations, nbins_theta, nbins_r, debug
         [cx,cy] = bookstein(X3b, Y3, beta_k);
 
         % warp each coordinate
-        fx_aff=cx(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
-        d2 = max(pdist2(X3b, X),0);
-        U  = d2 .* log(d2 + eps);
-        fx_wrp=cx(1:n_good)'*U;
-        fx=fx_aff+fx_wrp;
-        fy_aff=cy(n_good+1:n_good+3)'*[ones(1,nsamp1); X'];
-        fy_wrp=cy(1:n_good)'*U;
-        fy=fy_aff+fy_wrp;
+        fx_aff = cx(n_good+1:n_good+3)' * [ones(1, nsamp1); X'];
+        d2     = max(pdist2(X3b, X),0);
+        U      = d2 .* log(d2 + eps);
+        fx_wrp = cx(1:n_good)' * U;
+        fx     = fx_aff + fx_wrp;
+        fy_aff = cy(n_good+1:n_good+3)' * [ones(1, nsamp1); X'];
+        fy_wrp = cy(1:n_good)' * U;
+        fy     = fy_aff + fy_wrp;
 
         % update Xk for the next iteration
         Xk = [fx; fy]';

@@ -57,6 +57,15 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
 
     fprintf(1, '> Suppressing...\n');
     bs = nms_face(bs, nms_threshold);
+    
+    if isempty(bs)
+        fprintf(1, '> Could not locate a face!...\n');
+        X           = [];
+        Y           = [];
+        BOX         = [];
+        ORIENTATION = NaN;
+        return;
+    end
 
     % define the mapping from view-specific mixture id to viewpoint
     if length(model.components)==13 
