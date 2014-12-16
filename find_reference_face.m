@@ -37,7 +37,9 @@ function [ref_face] = find_reference_face(orientation)
     elseif orientation == 90
         ref_face = reference_face.plus_90;
     else
-        error('Non-quantized orientation: %f', orientation);
+        % Otherwise, just use 0
+        ref_face = reference_face.zero;
+        %error('Non-quantized orientation: %f', orientation);
     end
 end
 

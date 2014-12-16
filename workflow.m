@@ -13,6 +13,10 @@ im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 
 [X,Y,BBOX,ORIENTATION] = detect_faces(im, model, 0.2);
 
+%% Remove points from the face features that do not form the convex hull:
+
+plot(X,Y,'o','Color','r');
+
 %% Plot the raw points returned by detect_faces
 %ref_face = rescale_face(im, find_reference_face(ORIENTATION), model, 0.2);
 ref_face = find_reference_face(ORIENTATION);

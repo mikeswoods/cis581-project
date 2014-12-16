@@ -15,9 +15,12 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
 % nms_threshold = non-maximal suppression threshold. Default is 0.3.
 % interval      = Model interval (? not sure what this does)
 %
-% [X,Y]         = (x,y) feature points
-% BOX           = Bounding box of the form :[x1 y1 x2 y2]
-% ORIENTATION   = 
+% [X,Y]         = (x,y) feature points, where X and Y are both NxM,
+%                 where M is the number of detected faces
+% BOX           = Mx4 bounding box of the form :[x1 y1 x2 y2], where M
+%                 is the number of detected faces
+% ORIENTATION   = Mx1 orientation angles, where M is the number of 
+%                 detected faces
     addpath('fitw_detect');
  
     if nargin ~= 4
@@ -76,11 +79,23 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
         error('Can not recognize this model');
     end
 
-    %bs.xy is a Nx4 matrix, where each row is bounding box of the form:
-    % [x1, y1, x2, y2]
+    % Dimension everything:
+    M           = numel(bs);
+    num_pts     = size(bs(1).xy, 1);
+    X           = zeros(num_pts, M);
+    Y           = zeros(num_pts, M);
+    BOX         = zeros(M, 4);
+    ORIENTATION = zeros(M,1);
+    for i=1:M
+        X(:,i)           = (bs(i).xy(:,1) + bs(i).xy(:,3)) ./ 2;
+        Y(:,i)           = (bs(i).xy(:,2) + bs(i).xy(:,4)) ./ 2;
+        BOX(i,:)         = [min(X(:,i)), min(Y(:,i)), max(X(:,i)), max(Y(:,i))];
+        ORIENTATION(i,:) = posemap(bs(i).c);
+    end
 
-    X   = (bs.xy(:,1) + bs.xy(:,3)) ./ 2;
-    Y   = (bs.xy(:,2) + bs.xy(:,4)) ./ 2;
-    BOX = [min(X), min(Y), max(X), max(Y)];
-    ORIENTATION = posemap(bs.c);
+    % We can get multiple faces, but for now, keep only one:
+    X   = X(:,1);
+    Y   = Y(:,1);
+    BOX = BOX(1,:);
+    ORIENTATION = ORIENTATION(1,:);
 end
