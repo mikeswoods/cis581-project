@@ -1,5 +1,5 @@
 %% Thin-plate parameter estimation run-wrapper
-function [output] = morph_tps_wrapper(im1, im2, P, Q, warp_frac, dissolve_frac)
+function [output,Ppad,Qpad] = morph_tps_wrapper(im1, im2, P, Q, warp_frac, dissolve_frac)
     
     [im1,im2,Ppad,Qpad] = matchdim(im1, im2, @zeropad);
 

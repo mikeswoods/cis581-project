@@ -37,12 +37,22 @@ Q = [X,Y];
 M = shape_context_match(P, Q);
 showMatchedFeatures(ref_face.image, im, P(M,:), Q, 'montage');
 
-%%
+%% Warp the source face toward the target face using TPS:
 
-warp_face(ref_face.image ...
-         ,round(bbox_wh_to_xy(ref_face.bbox)) ...
-         ,[ref_face.x, ref_face.y] ...
-         ,im ...
-         ,round(bbox_wh_to_xy(BBOX)) ...
-         ,[X,Y]);
+[warp_im, face_outline] = warp_face(ref_face.image, [ref_face.x, ref_face.y], im, [X,Y]);
 
+%% Show the wapred image and the outline of the face:
+
+imshow(warp_im);
+hold on;
+plot(face_outline(:,1), face_outline(:,2), 'g-');
+
+%% Mask
+
+addpath('LaplacianBlend');
+mask = poly2mask(face_outline(:,1), face_outline(:,2), size(warp_im, 2), size(warp_im, 1));
+out  = LaplacianBlend(im(:,:,1), warp_im(:,:,1), mask);
+
+%out  = blend_images(im, warp_im, mask);
+
+%imshow(out);

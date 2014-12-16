@@ -1,50 +1,20 @@
-%
-%
-function [W] = warp_face(source_im, source_bbox, source_P, target_im, target_bbox, target_P)
-    
-    % Crop the source and target faces
-    [source_face, src_crop_bbox]    = imcrop(source_im, source_bbox);
-    [target_face, target_crop_bbox] = imcrop(target_im, target_bbox);
-    
-    % Recompute points:
-    source_Q(:,1) = source_P(:,1) - src_crop_bbox(1);
-    source_Q(:,2) = source_P(:,2) - src_crop_bbox(2);
-    target_Q(:,1) = target_P(:,1) - target_crop_bbox(1);
-    target_Q(:,2) = target_P(:,2) - target_crop_bbox(2);
-  
-    % Take the points corresponding to the convex hull of the source
-    % and target faces:
-    ks = convhull(source_Q(:,1), source_Q(:,2));
-    source_face_outline = [source_Q(ks,1), source_Q(ks,2)];
-    
-    kt = convhull(target_Q(:,1), target_Q(:,2));
-    target_face_outline = [target_Q(kt,1), target_Q(kt,2)];
+%%
+% Warps the face using TPS, returning an image the same dimensions as the
+% target image and a Nx2 matrix of points comprising the convex hull of
+% the face
+function [warp_im, face_outline] = warp_face(source_im, source_P, target_im, target_P)
 
     addpath('tps');
-    W = morph_tps_wrapper(source_face, target_face, source_Q, target_Q, 1.0, 0.0);
+    [W,~,target_pad] = morph_tps_wrapper(source_im, target_im, source_P, target_P, 1.0, 0.0);
     
-    imshow(W);
-    
-    % Compute the transformation:
-%     tform = estimateGeometricTransform(source_Q, target_Q, 'affine');
-% 
-%     imshow(source_face);
-%     hold on;
-%     plot(source_face_outline(:,1), source_face_outline(:,2), 'r-');
-%     plot(target_face_outline(:,1), target_face_outline(:,2), 'g-'); 
-%     plot(Q(:,1), Q(:,2), 'b-'); 
-end
+    % Crop W to the size of the original target image: [x1 y1 x2 y2]
+    target_w  = size(target_im,2);
+    target_h  = size(target_im,1);
+    crop_rect = [target_pad.S, target_pad.W, target_w - 1, target_h - 1];    
+    warp_im   = imcrop(W, crop_rect);
 
-function [Q] = xform_points(T,P)
-    n    = size(P,1);
-    PH = [P, ones(n, 1)]; 
-    PT = zeros(n, 3);
-    
-    for i=1:n
-        PT(i,:) = PH(i,:) * T;
-    end
-    
-    w = PT(:,3);
-    Q = [PT(:,1) ./ w, PT(:,2) ./ w];
+    % Take the points corresponding to the convex hull of the target faces
+    % and use it to cut out the outline of the warped face:    
+    K = convhull(target_P(:,1), target_P(:,2));
+    face_outline = [target_P(K,1) , target_P(K,2) ];
 end
-
