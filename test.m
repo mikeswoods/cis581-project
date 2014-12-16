@@ -12,7 +12,7 @@ im = im2double(imread('data/easy/iu.jpg'));
 %im = im2double(imread('data/hard/69daf49a8beb63dc35bf65b4e408cde9.jpg'));
 %im = im2double(imread('data/hard/314eeaedbe5732558841972afdbaf32f.jpg'));
 %im = im2double(imread('data/hard/beard-champs4.jpg'));
-im = im2double(imread('data/hard/star-trek-2009-sample-003.jpg'));
+%im = im2double(imread('data/hard/star-trek-2009-sample-003.jpg'));
 
 out = replace_face(im);
-imshow(out);
+%imshow(out);

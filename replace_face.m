@@ -60,4 +60,8 @@ function [out] = replace_face(target_im)
     % Create the blending mask:
     mask = poly2mask(FX, FY, target_size(1), target_size(2));
     out  = feather_blend_images(I, J, mask);
+    
+    imshow(out);
+    hold on;
+    plot(FX, FY, 'o', 'Color', 'r');
 end
