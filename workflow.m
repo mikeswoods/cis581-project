@@ -8,8 +8,8 @@ model = data.model;
 
 %im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
-im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
-%im  = im2double(imread('data/hard/0lliviaa.jpg'));
+%im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+im  = im2double(imread('data/hard/0lliviaa.jpg'));
 
 [X,Y,BBOX,ORIENTATION] = detect_faces(im, model, 0.2);
 
@@ -86,12 +86,8 @@ plot(FX, FY, 'g-');
 %rectangle('Position', bbox_wh_to_xy(BBOX), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Mask
-
 mask = poly2mask(FX, FY, target_size(1), target_size(2));
-out  = feather_blend_images(I, J, mask);
-imshow(out);
 
-%% TEST!!!
+out = gradient_blend(J, I, mask);
 
-out = add_face(im2double(imread('data/hard/jennifer_xmen.jpg')));
-imshow(out);
+imshow(out)
