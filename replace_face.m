@@ -3,8 +3,9 @@
 % workflow.m
 %
 % target_im = The target image to replace the face in
-% out       = The output image with the same dimensions as target_im
-function [out] = replace_face(target_im)
+% target_outline = 
+% im_out    = The output image with the same dimensions as target_im
+function [im_out, target_outline] = replace_face(target_im)
 
     % Add working paths for TPS and the FITW face detection code:
     addpath('fitw_detect');
@@ -16,18 +17,14 @@ function [out] = replace_face(target_im)
     
     % Detect the face in the target image:
     fprintf(1, '> Detecting face in target image...\n');
-    [target_X, target_Y, target_bbox, target_orientation] = ...
-        detect_faces(target_im, model, 0.2);
+    [target_X, target_Y, target_bbox, target_orientation] = detect_faces(target_im, model, 0.2);
 
     % Find the reference face with the closest orientation:
     ref_face = find_reference_face(target_orientation);
 
-    source_X = ref_face.x;
-    source_Y = ref_face.y;
-    
     % Simply both faces:
-%     [source_X, source_Y, target_X, target_Y] = ...
-%         simply_face_points(ref_face.x, ref_face.y, target_X, target_Y);
+    [source_X, source_Y, target_X, target_Y] = ...
+        simply_face_points(ref_face.x, ref_face.y, target_X, target_Y);
     
     % Warp the source face toward the target face using TPS:
     fprintf(1, '> Running TPS...\n');
@@ -54,14 +51,13 @@ function [out] = replace_face(target_im)
     J(i_range,j_range,:) = warp_im;
 
     % Compute the offset of the source faces convex hull:
-    FX = face_outline(:,1) + target_offset(1);
-    FY = face_outline(:,2) + target_offset(2);
+    TX = face_outline(:,1) + target_offset(1);
+    TY = face_outline(:,2) + target_offset(2);
 
-    % Create the blending mask:
-    mask = poly2mask(FX, FY, target_size(1), target_size(2));
-    out  = feather_blend_images(I, J, mask);
+    target_outline = [TX, TY];
     
-    imshow(out);
-    hold on;
-    plot(FX, FY, 'o', 'Color', 'r');
+    % Create the blending mask:
+    fprintf(1, '> Creating blending mask...\n');
+    mask = poly2mask(TX, TY, target_size(1), target_size(2));
+    im_out  = feather_blend_images(I, J, mask);
 end

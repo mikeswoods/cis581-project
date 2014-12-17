@@ -20,14 +20,6 @@ function [warp_im, outline, target_offset] = warp_face(source_im, source_bbox, s
     target_Q(:,1) = target_P(:,1) - target_crop_bbox(1);
     target_Q(:,2) = target_P(:,2) - target_crop_bbox(2);
 
-%     imshow(source_face);
-%     hold on;
-%     plot(source_Q(:,1), source_Q(:,2), 'o', 'Color', 'g');
-%     
-%     imshow(target_face);
-%     hold on;
-%     plot(target_Q(:,1), target_Q(:,2), 'o', 'Color', 'g');
-
     target_offset = target_crop_bbox;
 
     [warp_im, ~, padding] = ...

@@ -21,6 +21,15 @@ plot(X,Y,'o','Color','r');
 %ref_face = rescale_face(im, find_reference_face(ORIENTATION), model, 0.2);
 ref_face = find_reference_face(ORIENTATION);
 
+%%
+
+[XX1, YY1, XX2, YY2] = simply_face_points(X, Y, ref_face.x,ref_face.y);
+
+hold on;
+plot(XX1, YY1, 'o', 'Color', 'r');
+plot(XX2, YY2, 'o', 'Color', 'k');
+
+
 %% Show the points on the reference face along with the bounding box:
 imshow(ref_face.image);
 hold on;
