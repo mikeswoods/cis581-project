@@ -8,14 +8,16 @@ model = data.model;
 
 %im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
-%im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
-im  = im2double(imread('data/hard/0lliviaa.jpg'));
+im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+%im  = im2double(imread('data/hard/0lliviaa.jpg'));
 
-[X,Y,BBOX,ORIENTATION] = detect_faces(im, model, 0.2);
+[X,Y,BBOX,ORIENTATION] = detect_faces(im, model);
 
-%% Remove points from the face features that do not form the convex hull:
+%%
 
-plot(X,Y,'o','Color','r');
+F = get_face_features(im, bbox_xy_to_wh(BBOX));
+%rectangle('Position', bbox_xy_to_wh(BBOX), 'EdgeColor', 'y', 'LineWidth', 2);
+plot_face_features(im, F);
 
 %% Plot the raw points returned by detect_faces
 %ref_face = rescale_face(im, find_reference_face(ORIENTATION), model, 0.2);
@@ -23,18 +25,20 @@ ref_face = find_reference_face(ORIENTATION);
 
 %%
 
-[XX1, YY1, XX2, YY2] = simply_face_points(X, Y, ref_face.x,ref_face.y);
-
-hold on;
-plot(XX1, YY1, 'o', 'Color', 'r');
-plot(XX2, YY2, 'o', 'Color', 'k');
-
+[XX1, YY1, XX2, YY2] = ...
+    refine_face_points(im, BBOX, X, Y, ref_face.image ...
+                      ,ref_face.bbox, ref_face.x, ref_face.y);
+% 
+% hold on;
+% plot(XX1, YY1, 'o', 'Color', 'r');
+% plot(XX2, YY2, 'o', 'Color', 'g');
+showMatchedFeatures(im, ref_face.image, [XX1, YY1], [XX2, YY2], 'montage');
 
 %% Show the points on the reference face along with the bounding box:
 imshow(ref_face.image);
 hold on;
 plot(ref_face.x, ref_face.y, 'o', 'Color', 'g');
-rectangle('Position', bbox_wh_to_xy(ref_face.bbox, 50), 'EdgeColor', 'g', 'LineWidth', 2);
+rectangle('Position', bbox_xy_to_wh(ref_face.bbox, 50), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Show the points on the target face along with the bounding box:
 imshow(im);
@@ -42,7 +46,7 @@ hold on;
 P = [X, Y];
 P = shuffle(P);
 plot(P(:,1), P(:,2), 'o', 'Color', 'g');
-rectangle('Position', bbox_wh_to_xy(BBOX, 50), 'EdgeColor', 'g', 'LineWidth', 2);
+rectangle('Position', bbox_xy_to_wh(BBOX, 50), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Match and plot feature points between faces:
 P = [ref_face.x, ref_face.y];
@@ -83,7 +87,7 @@ FY = face_outline(:,2) + target_offset(2);
 imshow(I)
 hold on;
 plot(FX, FY, 'g-');
-%rectangle('Position', bbox_wh_to_xy(BBOX), 'EdgeColor', 'g', 'LineWidth', 2);
+%rectangle('Position', bbox_xy_to_wh(BBOX), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Mask
 mask = poly2mask(FX, FY, target_size(1), target_size(2));

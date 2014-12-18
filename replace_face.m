@@ -22,9 +22,10 @@ function [im_out, target_outline] = replace_face(target_im)
     % Find the reference face with the closest orientation:
     ref_face = find_reference_face(target_orientation);
 
-    % Simply both faces:
+    % Refine the points of both faces:
     [source_X, source_Y, target_X, target_Y] = ...
-        simply_face_points(ref_face.x, ref_face.y, target_X, target_Y);
+        refine_face_points(ref_face.image, ref_face.bbox, ref_face.x, ref_face.y ...
+                          ,target_im, target_bbox, target_X, target_Y);
     
     % Warp the source face toward the target face using TPS:
     fprintf(1, '> Running TPS...\n');
@@ -59,5 +60,9 @@ function [im_out, target_outline] = replace_face(target_im)
     % Create the blending mask:
     fprintf(1, '> Creating blending mask...\n');
     mask = poly2mask(TX, TY, target_size(1), target_size(2));
-    im_out  = feather_blend_images(I, J, mask);
+
+    fprintf(1, '> Gradient blending the images...\n');
+    im_out = gradient_blend(J, I, mask);
+    
+    fprintf(1, '> Done\n');
 end

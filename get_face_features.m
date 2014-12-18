@@ -1,65 +1,90 @@
-%% Returns a single struct of detected facial feature bounding boxes 
+%% Returns a struct of detected facial feature bounding boxes 
 % for the image.
 % 
 % Note: face_image is expected to contain a SINGLE face to run feature 
 % 
-% face_image = The face image to find the feature bounding boxes of
+% face_image = The image to find the feature bounding boxes of
+% face_bbox  = If given, the bounding box of a single face
 % F          = A struct of the following form:
 % F.Nose     = 4x1 matrix bounding box for the nose ([x, y, w, h])
 % F.Mouth    = 4x1 matrix bounding box for the mouth ([x, y, w, h])
 % F.LeftEye  = 4x1 matrix bounding box for the left eye ([x, y, w, h])
 % F.RightEye = 4x1 matrix bounding box for the right eye ([x, y, w, h])
 %
-function [F] = get_face_features(face_image)
+function [F] = get_face_features(face_image, face_bbox)
+
+    if nargin ~= 2
+        face_bbox = [1, 1, size(face_image, 2), size(face_image, 1)];
+    end
     
-    % Do some initial preprocessing of the image
-    %I = imsharpen(imadjust(rgb2gray(faceImage)));
-    %I = imadjust(rgb2gray(faceImage));
-    I = face_image;
+    [I, crop_bbox] = imcrop(face_image, face_bbox);
+    
+    nose = [];
+    mouth = [];
+    left_eye = [];
+    right_eye = [];
     
     % First, try to find the nose the initial landmarks:
-    nose             = get_single_feature(I, 'Nose');
-    [nose_x, nose_y] = bbox_centroid_wh(nose);
-    nose_centroid    = [nose_x, nose_y];
+    nose = get_single_feature(I, 'Nose');
+    if ~isempty(nose)
 
-    % Find all mouth candidates:
-    mouth              = get_any_feature(I, 'Mouth');
-    [mouth_x, mouth_y] = bbox_centroid_wh(mouth);
-    mouth = prune_mouth_candidates(nose_centroid, mouth, [mouth_x, mouth_y]);
-    
-    % Find all left eye candidates:
-    left_eye = get_any_feature(I, 'LeftEye');
-    if size(left_eye, 1) > 0
-        [left_eye_x, left_eye_y] = bbox_centroid_wh(left_eye);
-        left_eye = prune_left_eye_candidates(nose_centroid, left_eye, [left_eye_x, left_eye_y]);
+        [nose_x, nose_y] = bbox_centroid_wh(nose);
+        nose_centroid    = [nose_x, nose_y];
+
+        % Find all mouth candidates:
+        mouth              = get_any_feature(I, 'Mouth');
+        [mouth_x, mouth_y] = bbox_centroid_wh(mouth);
+        mouth = prune_mouth_candidates(nose_centroid, mouth, [mouth_x, mouth_y]);
+
+        % Find all left eye candidates:
+        left_eye = get_any_feature(I, 'LeftEye');
+        if size(left_eye, 1) > 0
+            [left_eye_x, left_eye_y] = bbox_centroid_wh(left_eye);
+            left_eye = prune_left_eye_candidates(nose_centroid, left_eye, [left_eye_x, left_eye_y]);
+        end
+
+        % Find all right eye candidates:
+        right_eye  = get_any_feature(I, 'RightEye');
+        if size(left_eye, 1) > 0
+            [right_eye_x, right_eye_y] = bbox_centroid_wh(right_eye);
+            right_eye = prune_right_eye_candidates(nose_centroid, right_eye, [right_eye_x, right_eye_y]);
+        end
+
+        % ---------------------------------------------------------------------
+
+        % Finally, prune any boxes that are fully contained in other boxes:
+        mouth_temp     = mouth;
+        left_eye_temp  = left_eye;
+        right_eye_temp = right_eye;
+
+        mouth     = prune_enclosed(mouth, [nose ; left_eye_temp; right_eye_temp]);
+        left_eye  = prune_enclosed(left_eye, [nose ; mouth_temp; right_eye_temp]);
+        right_eye = prune_enclosed(right_eye, [nose ; mouth_temp; left_eye_temp]);
+
+        % ---------------------------------------------------------------------
+
+        % Build a struct to hold all of our stuff:
+
+        % Add the offsets:
+        if size(nose, 1) > 0
+            nose(:,1) = nose(:,1) + crop_bbox(1);
+            nose(:,2) = nose(:,2) + crop_bbox(2);
+        end
+        if size(mouth, 1) > 0
+            mouth(:,1) = mouth(:,1) + crop_bbox(1);
+            mouth(:,2) = mouth(:,2) + crop_bbox(2);
+        end
+        if size(left_eye, 1) > 0
+            left_eye(:,1) = left_eye(:,1) + crop_bbox(1);
+            left_eye(:,2) = left_eye(:,2) + crop_bbox(2);
+        end
+        if size(right_eye, 1) > 0
+            right_eye(:,1) = right_eye(:,1) + crop_bbox(1);
+            right_eye(:,2) = right_eye(:,2) + crop_bbox(2);
+        end
     end
-        
-    % Find all right eye candidates:
-    right_eye  = get_any_feature(I, 'RightEye');
-    if size(left_eye, 1) > 0
-        [right_eye_x, right_eye_y] = bbox_centroid_wh(right_eye);
-        right_eye = prune_right_eye_candidates(nose_centroid, right_eye, [right_eye_x, right_eye_y]);
-    end
-
-    % ---------------------------------------------------------------------
-
-    % Finally, prune any boxes that are fully contained in other boxes:
-    mouth_temp     = mouth;
-    left_eye_temp  = left_eye;
-    right_eye_temp = right_eye;
     
-    mouth     = prune_enclosed(mouth, [nose ; left_eye_temp; right_eye_temp]);
-    left_eye  = prune_enclosed(left_eye, [nose ; mouth_temp; right_eye_temp]);
-    right_eye = prune_enclosed(right_eye, [nose ; mouth_temp; left_eye_temp]);
-   
-    % ---------------------------------------------------------------------
-    
-    % Build a struct to hold all of our stuff:
-    
-    F = struct('Nose', nose ...
-              ,'Mouth', mouth ...
-              ,'LeftEye', left_eye ...
-              ,'RightEye', right_eye);
+    F = struct('Nose', nose, 'Mouth', mouth, 'LeftEye', left_eye, 'RightEye', right_eye);
 end
 
 %%

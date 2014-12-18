@@ -4,7 +4,21 @@ basic = load('data/basicset.mat');
 
 %% 
 
-[I, t_out] = replace_face(basic.easy{2});
+% im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
+% im = im2double(imread('data/testset/blending/Michael-Jordan.jpg'));
+im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+
+
+%% 
+
+[I, t_out] = replace_face(basic.easy{6});
+
+%%
+
+[I, t_out] = replace_face(im);
+
+%%
+imshow(I);
 
 %%
 imshow(I);

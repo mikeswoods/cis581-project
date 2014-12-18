@@ -5,8 +5,8 @@ function [warp_im, outline, target_offset] = warp_face(source_im, source_bbox, s
     addpath('tps');
 
     % Crop the source and target faces
-    [source_face, src_crop_bbox]    = imcrop(source_im, bbox_wh_to_xy(source_bbox, 10));
-    [target_face, target_crop_bbox] = imcrop(target_im, bbox_wh_to_xy(target_bbox, 10));
+    [source_face, src_crop_bbox]    = imcrop(source_im, bbox_xy_to_wh(source_bbox, 10));
+    [target_face, target_crop_bbox] = imcrop(target_im, bbox_xy_to_wh(target_bbox, 10));
     
     scale_w = size(target_face, 2) ./ size(source_face, 2);
     scale_h = size(target_face, 1) ./ size(source_face, 1);

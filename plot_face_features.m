@@ -4,9 +4,7 @@
 % 
 % face_im       =
 % face_features =
-% X             =
-% Y             =
-function plot_face_features(face_im, face_features, X, Y)
+function plot_face_features(face_im, face_features)
     imshow(face_im);
     hold on;
     % Nose
@@ -24,8 +22,5 @@ function plot_face_features(face_im, face_features, X, Y)
     if face_features.Mouth
         rectangle('Position', face_features.Mouth, 'EdgeColor', 'b', 'LineWidth', 2);
     end
-    
-    plot(X, Y, 'o', 'Color', 'g');
-    hold off;
 end
 
