@@ -2,16 +2,26 @@
 
 basic = load('data/basicset.mat');
 
-%% 
+%% === Blending set ===
 
-% im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
-% im = im2double(imread('data/testset/blending/Michael-Jordan.jpg'));
+%im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+%im = im2double(imread('data/testset/blending/060610-beard-championships-bend-stroomer-0002.jpg'));
+im = im2double(imread('data/testset/blending/b1.jpg'));
+im = im2double(imread('data/testset/blending/bc.jpg'));
+im = im2double(imread('data/testset/blending/Jennifer_lawrence_as_katniss-wide.jpg'));
+im = im2double(imread('data/testset/blending/jennifer-lawrences-mystique-new-x-men-spin-off-movie.jpg'));
+im = im2double(imread('data/testset/blending/Michael-Jordan.jpg'));
 im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 
+%% === Pose set ===
 
-%% 
-
-[I, t_out] = replace_face(basic.easy{6});
+ im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
+ im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+% im = im2double(imread('data/testset/pose/p1.jpg'));
+% im = im2double(imread('data/testset/pose/p2.jpg'));
+% im = im2double(imread('data/testset/pose/Pepper-and-Tony-tony-stark-and-pepper-potts-9679158-1238-668.jpg'));
+% im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
+% im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 
 %%
 

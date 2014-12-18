@@ -11,8 +11,10 @@ model = data.model;
 %im  = im2double(imread('data/me-small.jpg'));
 %im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %im  = im2double(imread('data/hard/0lliviaa.jpg'));
-im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
-
+%im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+%im = im2double(imread('data/testset/blending/b1.jpg'));
+im = im2double(imread('data/testset/blending/bc.jpg'));
+ im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 [X,Y,BBOX,ORIENTATION] = detect_faces(im, model);
 
 %%
@@ -25,30 +27,11 @@ plot_face_features(im, F);
 %ref_face = rescale_face(im, find_reference_face(ORIENTATION), model, 0.2);
 ref_face = find_reference_face(ORIENTATION);
 
-%%
-
-[XX1, YY1, XX2, YY2] = ...
-    refine_face_points(im, BBOX, X, Y, ref_face.image ...
-                      ,ref_face.bbox, ref_face.x, ref_face.y);
-% 
-% hold on;
-% plot(XX1, YY1, 'o', 'Color', 'r');
-% plot(XX2, YY2, 'o', 'Color', 'g');
-showMatchedFeatures(im, ref_face.image, [XX1, YY1], [XX2, YY2], 'montage');
-
 %% Show the points on the reference face along with the bounding box:
 imshow(ref_face.image);
 hold on;
 plot(ref_face.x, ref_face.y, 'o', 'Color', 'g');
 rectangle('Position', bbox_xy_to_wh(ref_face.bbox, 50), 'EdgeColor', 'g', 'LineWidth', 2);
-
-%% Show the points on the target face along with the bounding box:
-imshow(im);
-hold on;
-P = [X, Y];
-P = shuffle(P);
-plot(P(:,1), P(:,2), 'o', 'Color', 'g');
-rectangle('Position', bbox_xy_to_wh(BBOX, 50), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Match and plot feature points between faces:
 
@@ -57,6 +40,16 @@ rectangle('Position', bbox_xy_to_wh(BBOX, 50), 'EdgeColor', 'g', 'LineWidth', 2)
                       ,im, BBOX, X, Y);
 
 showMatchedFeatures(ref_face.image, im, [X1,Y1], [X2,Y2], 'montage');
+
+%% Test point snapping:
+
+E = edge(rgb2gray(ref_face.image), 'canny');
+imshow(E);
+CHK = convhull(ref_face.x, ref_face.y);
+[EXY] = snap_to_edges(E, [ref_face.x(CHK), ref_face.y(CHK)], 15);
+% 
+hold on;
+plot(EXY(:,1), EXY(:,2), 'o', 'Color', 'g');
 
 %% Warp the source face toward the target face using TPS:
 
