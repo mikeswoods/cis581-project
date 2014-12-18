@@ -1,8 +1,7 @@
 %
 %
-function [warp_im, outline, target_offset] = warp_face(source_im, source_bbox, source_P, target_im, target_bbox, target_P)
-    
-    addpath('tps');
+function [source_face, target_offset, T, HULL] = ...
+    affine_warp_face(source_im, source_bbox, source_P, target_im, target_bbox, target_P)
 
     % Crop the source and target faces
     [source_face, src_crop_bbox]    = imcrop(source_im, bbox_xy_to_wh(source_bbox, 10));
@@ -20,13 +19,15 @@ function [warp_im, outline, target_offset] = warp_face(source_im, source_bbox, s
     target_Q(:,1) = target_P(:,1) - target_crop_bbox(1);
     target_Q(:,2) = target_P(:,2) - target_crop_bbox(2);
 
+    % Compute the convex hull of the scaled face:
+    k    = convhull(source_Q(:,1), source_Q(:,2));
+    HULL = [source_Q(k,1), source_Q(k,2)];
+    
+    % Run RANSAC to remove outliers:
+    [~,I] = ransac(source_Q(:,1), source_Q(:,2), target_Q(:,1), target_Q(:,2), 4);
+    
+    % Construct a transformation from the matched points:
+    T = fitgeotrans([source_Q(I,1), source_Q(I,2)], [target_Q(I,1), target_Q(I,2)] ,'affine');
+
     target_offset = target_crop_bbox;
-
-    [warp_im, ~, padding] = ...
-        morph_tps_wrapper(source_face, target_face, source_Q, target_Q, 1.0, 0.0);
-
-    % Take the points corresponding to the convex hull of the target faces
-    % and use it to cut out the outline of the warped face:    
-    K       = convhull(target_Q(:,1), target_Q(:,2));
-    outline = [target_Q(K,1) + padding.W, target_Q(K,2) + padding.S];
 end

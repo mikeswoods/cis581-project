@@ -7,7 +7,7 @@
 % mask = MxN   binary mask
 function [K] = feather_blend_images(I, J, mask)
     
-    G = fspecial('gaussian', [30,30], 15);
+    G = fspecial('gaussian', [13,13], 5);
     mask_feather     = imfilter(double(mask), G);
     not_mask_feather = imfilter(double(~mask), G);
 

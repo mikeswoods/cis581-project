@@ -47,13 +47,10 @@ function [out_X1, out_Y1, out_X2, out_Y2] = ...
     
     % If there are additional features, add them:
     [XX1, YY1, XX2, YY2] = ...
-       add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox);
+       add_common_landmarks(face1_im, face1_bbox, X1, Y1 ...
+                           ,face2_im, face2_bbox, X2, Y2);
     
-    % Concat:    
-%     out_X1 = XX1;
-%     out_Y1 = YY1;
-%     out_X2 = XX2;
-%     out_Y2 = YY2;
+    % Concat:
     out_X1 = [out_X1 ; XX1];
     out_Y1 = [out_Y1 ; YY1];
     out_X2 = [out_X2 ; XX2];
@@ -63,78 +60,166 @@ end
 %%
 % face1_im   =
 % face1_bbox =
+% X1         =
+% Y1         = 
 % face2_im   =
 % face2_bbox =
-function [X1, Y1, X2, Y2] = ...
-    add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox)
-
-    X1 = [];
-    Y1 = [];
-    X2 = [];
-    Y2 = [];
+% X2         =
+% Y1         = 
+function [out_X1, out_Y1, out_X2, out_Y2] = ...
+    add_common_landmarks(face1_im, face1_bbox, X1, Y1 ...
+                        ,face2_im, face2_bbox, X2, Y2)
+    out_X1 = [];
+    out_Y1 = [];
+    out_X2 = [];
+    out_Y2 = [];
 
     % Get the features for both faces 1 and 2:
     F1 = get_face_features(face1_im, face1_bbox);
     F2 = get_face_features(face2_im, face2_bbox);
     
-    % For each face feature:
-    fields = {'LeftEye', 'RightEye', 'Mouth'};
-    
-    for i=1:numel(fields)
+    % === Left Eye ===
+    LeftEyeCenter_P = [];
+    LeftEyeCenter_Q = [];
 
-        f = fields{i};
-    
-        % See if the same features were identified on each face:
-        if ~isempty(F1.(f)) && ~isempty(F2.(f)) 
-
-            P_wh = F1.(f);
-            Q_wh = F2.(f);
-            P_xy = bbox_wh_to_xy(F1.(f));
-            Q_xy = bbox_wh_to_xy(F2.(f));
-
-            % Find the centroids of each bounding box and use them as
-            % feature points:
-            CX1 = round((P_xy(1) + P_xy(3)) * 0.5);
-            CY1 = round((P_xy(2) + P_xy(4)) * 0.5);
-            CX2 = round((Q_xy(1) + Q_xy(3)) * 0.5);
-            CY2 = round((Q_xy(2) + Q_xy(4)) * 0.5);
-            
-            % And add them to the faces:
-            X1 = [X1 ; CX1];
-            Y1 = [Y1 ; CY1];
-            X2 = [X2 ; CX2];
-            Y2 = [Y2 ; CY2];
-            
-            % Do some additional stuff for the mouth:
-            if isequal(f, 'Mouth')
-                % Add points equal to the width of the bounding box on
-                % the same plane as the centroid:
-                P_half_w = P_wh(3) * 0.5;
-                Q_half_w = Q_wh(3) * 0.5;
-                
-                % Points to the left of the centroid:
-                X1 = [X1 ; CX1 - (P_half_w * 0.66) ; CX1 + (P_half_w * 0.66)];
-                X2 = [X2 ; CX2 - (Q_half_w * 0.66) ; CX2 + (Q_half_w * 0.66)];
-                
-                % Points to the right of the centroid:
-                Y1 = [Y1 ; CY1 ; CY1];
-                Y2 = [Y2 ; CY2 ; CY2];
-            end
-        end
+    if ~isempty(F1.LeftEye) && ~isempty(F2.LeftEye) 
+        % Find the centroids of each bounding box and use them as
+        % feature points:
+        [CX1,CY1] = bbox_centroid(bbox_wh_to_xy(F1.LeftEye));
+        [CX2,CY2] = bbox_centroid(bbox_wh_to_xy(F2.LeftEye));
+        LeftEyeCenter_P = [CX1,CY1];
+        LeftEyeCenter_Q = [CX2,CY2];
+        
+        % And add them to the faces:
+        out_X1 = [out_X1 ; CX1];
+        out_Y1 = [out_Y1 ; CY1];
+        out_X2 = [out_X2 ; CX2];
+        out_Y2 = [out_Y2 ; CY2];
     end
+    
+    % === Right Eye ===
+    RightEyeCenter_P = [];
+    RightEyeCenter_Q = [];
+
+    if ~isempty(F1.RightEye) && ~isempty(F2.RightEye) 
+        % Find the centroids of each bounding box and use them as
+        % feature points:
+        [CX1,CY1]  = bbox_centroid(bbox_wh_to_xy(F1.RightEye));
+        [CX2,CY2]  = bbox_centroid(bbox_wh_to_xy(F2.RightEye));
+        RightEyeCenter_P = [CX1,CY1];
+        RightEyeCenter_Q = [CX2,CY2];
+
+        % And add them to the faces:
+        out_X1 = [out_X1 ; CX1];
+        out_Y1 = [out_Y1 ; CY1];
+        out_X2 = [out_X2 ; CX2];
+        out_Y2 = [out_Y2 ; CY2];
+    end
+    
+    % === Mouth ===
+    MouthCenter_P = [];
+    MouthCenter_Q = [];
+    
+    if ~isempty(F1.Mouth) && ~isempty(F2.Mouth) 
+        % Find the centroids of each bounding box and use them as
+        % feature points:
+        [CX1,CY1] = bbox_centroid(bbox_wh_to_xy(F1.Mouth));
+        [CX2,CY2] = bbox_centroid(bbox_wh_to_xy(F2.Mouth));
+        MouthCenter_P = [CX1,CY1];
+        MouthCenter_Q = [CX2,CY2];
+
+        % And add them to the faces:
+        out_X1 = [out_X1 ; CX1];
+        out_Y1 = [out_Y1 ; CY1];
+        out_X2 = [out_X2 ; CX2];
+        out_Y2 = [out_Y2 ; CY2];
+
+        % Do some additional stuff for the mouth:
+        P_wh = F1.Mouth;
+        Q_wh = F2.Mouth;
+        % Add points equal to the width of the bounding box on
+        % the same plane as the centroid:
+        P_half_w = P_wh(3) ./ 2;
+        Q_half_w = Q_wh(3) ./ 2;
+
+        % Points to the left of the centroid:
+        out_X1 = [out_X1 ; CX1 - (P_half_w * 0.66) ; CX1 + (P_half_w * 0.66)];
+        out_X2 = [out_X2 ; CX2 - (Q_half_w * 0.66) ; CX2 + (Q_half_w * 0.66)];
+
+        % Points to the right of the centroid:
+        out_Y1 = [out_Y1 ; CY1 ; CY1];
+        out_Y2 = [out_Y2 ; CY2 ; CY2];
+    end
+    
+    % Using the centers from both eyes and the mouth, compute the 
+    % relative face centroid:
+    FaceCenter_P = mean([LeftEyeCenter_P ; RightEyeCenter_P ; MouthCenter_P], 1);
+    FaceCenter_Q = mean([LeftEyeCenter_Q ; RightEyeCenter_Q ; MouthCenter_Q], 1);
+
+    out_X1 = [out_X1 ; FaceCenter_P(1)];
+    out_Y1 = [out_Y1 ; FaceCenter_P(2)];
+    out_X2 = [out_X2 ; FaceCenter_Q(1)];
+    out_Y2 = [out_Y2 ; FaceCenter_Q(2)];
+    
+    % Find two cheek points on each face:
+    Leftmost_P                      = leftmost_point(X1, Y1);
+    Rightmost_P                     = rightmost_point(X1, Y1);
+    BetweenLeftEyeAndMouth_P        = mean([LeftEyeCenter_P; MouthCenter_P], 1);
+    BetweenRightEyeAndMouth_P       = mean([RightEyeCenter_P; MouthCenter_P], 1);
+    BetweenLeftMostAndFaceCenter_P  = mean([Leftmost_P ; FaceCenter_P], 1);
+    BetweenRightMostAndFaceCenter_P = mean([Rightmost_P ; FaceCenter_P], 1);
+    
+    LeftCheekP = [BetweenLeftMostAndFaceCenter_P(1), BetweenLeftEyeAndMouth_P(2)];
+    out_X1 = [out_X1 ; LeftCheekP(1)];
+    out_Y1 = [out_Y1 ; LeftCheekP(2)];
+    RightCheekP = [BetweenRightMostAndFaceCenter_P(1), BetweenRightEyeAndMouth_P(2)];
+    out_X1 = [out_X1 ; RightCheekP(1)];
+    out_Y1 = [out_Y1 ; RightCheekP(2)];
+    
+    Leftmost_Q                      = leftmost_point(X2, Y2);
+    Rightmost_Q                     = rightmost_point(X2, Y2);
+    BetweenLeftEyeAndMouth_Q        = mean([LeftEyeCenter_Q; MouthCenter_Q], 1);
+    BetweenRightEyeAndMouth_Q       = mean([RightEyeCenter_Q; MouthCenter_Q], 1);
+    BetweenLeftMostAndFaceCenter_Q  = mean([Leftmost_Q ; FaceCenter_Q], 1);
+    BetweenRightMostAndFaceCenter_Q = mean([Rightmost_Q ; FaceCenter_Q], 1);
+    
+    LeftCheekQ = [BetweenLeftMostAndFaceCenter_Q(1), BetweenLeftEyeAndMouth_Q(2)];
+    out_X2 = [out_X2 ; LeftCheekQ(1)];
+    out_Y2 = [out_Y2 ; LeftCheekQ(2)];
+    RightCheekQ = [BetweenRightMostAndFaceCenter_Q(1), BetweenRightEyeAndMouth_Q(2)];
+    out_X2 = [out_X2 ; RightCheekQ(1)];
+    out_Y2 = [out_Y2 ; RightCheekQ(2)];
+end
+
+%% Find the left most point in the face
+function [L] = leftmost_point(X, Y)
+    [~,I] = min(X);
+    L     = [X(I), Y(I)];
+end
+
+%% Find the right most point in the face
+function [L] = rightmost_point(X, Y)
+    [~,I] = max(X);
+    L     = [X(I), Y(I)];
+end
+
+%% Find the highest most point in the face
+function [L] = highest_point(X, Y)
+    [~,I] = min(Y);
+    L     = [X(I), Y(I)];
+end
+
+%% Find the highest most point in the face
+function [L] = lowest_point(X, Y)
+    [~,I] = max(Y);
+    L     = [X(I), Y(I)];
 end
 
 %%
-%
-function [out_X1, out_Y1, out_X2, out_Y2] = align_to_edges(E1, XY1, E2, XY2, radius)
-
-    S1     = snap_to_edges(E1, XY1, radius);
-    out_X1 = S1(:,1);
-    out_Y1 = S1(:,2);
-
-    S2     = snap_to_edges(E2, XY2, radius);
-    out_X2 = S2(:,1);
-    out_Y2 = S2(:,2);
+% Get the centroid of a bounding box
+function [cx,cy] = bbox_centroid(bbox)
+    cx = floor((bbox(1) + bbox(3)) * 0.5);
+    cy = floor((bbox(2) + bbox(4)) * 0.5);
 end
 
 % Given a list of (i,j) points defining a convex hull, this function will
