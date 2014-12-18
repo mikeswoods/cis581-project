@@ -8,8 +8,10 @@ model = data.model;
 
 %im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
-im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+%im  = im2double(imread('data/me-small.jpg'));
+%im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %im  = im2double(imread('data/hard/0lliviaa.jpg'));
+im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 
 [X,Y,BBOX,ORIENTATION] = detect_faces(im, model);
 
@@ -49,10 +51,12 @@ plot(P(:,1), P(:,2), 'o', 'Color', 'g');
 rectangle('Position', bbox_xy_to_wh(BBOX, 50), 'EdgeColor', 'g', 'LineWidth', 2);
 
 %% Match and plot feature points between faces:
-P = [ref_face.x, ref_face.y];
-Q = [X,Y];
-M = shape_context_match(P, Q);
-showMatchedFeatures(ref_face.image, im, P(M,:), Q, 'montage');
+
+[X1,Y1,X2,Y2] = ...
+    refine_face_points(ref_face.image, ref_face.bbox, ref_face.x, ref_face.y ...
+                      ,im, BBOX, X, Y);
+
+showMatchedFeatures(ref_face.image, im, [X1,Y1], [X2,Y2], 'montage');
 
 %% Warp the source face toward the target face using TPS:
 

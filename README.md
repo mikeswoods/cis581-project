@@ -13,3 +13,6 @@ CIS581 final project - 2014
 
 * "Face Detection, Pose Estimation and Landmark Localization in the Wild", X. Zhu, D. Ramanan.
 ** http://www.ics.uci.edu/~xzhu/face/
+
+* Face Parts Detection by Masayuki Tanaka
+** http://www.mathworks.com/matlabcentral/fileexchange/36855-face-parts-detection

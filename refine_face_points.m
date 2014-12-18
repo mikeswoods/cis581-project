@@ -54,7 +54,7 @@ function [X1, Y1, X2, Y2] = ...
     F2 = get_face_features(face2_im, face2_bbox);
     
     % For each face feature:
-    fields = {'Nose', 'LeftEye', 'RightEye'};
+    fields = {'LeftEye', 'RightEye', 'Mouth'};
     
     for i=1:numel(fields)
 
@@ -63,6 +63,8 @@ function [X1, Y1, X2, Y2] = ...
         % See if the same features were identified on each face:
         if ~isempty(F1.(f)) && ~isempty(F2.(f)) 
 
+            F1.(f)
+            
             P = bbox_wh_to_xy(F1.(f));
             Q = bbox_wh_to_xy(F2.(f));
 

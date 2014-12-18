@@ -6,7 +6,7 @@
 addpath('fitw_detect');
 data  = load('fitw_detect/face_p146_small.mat');
 model = data.model;
-threshold = 0.2;
+threshold = 0.3;
 
 %%
 
