@@ -21,45 +21,33 @@ function [im_out] = replace_face(target_im)
 
     % Find the reference face with the closest orientation:
     ref_face = find_reference_face(target_orientation);
-    
-    % Warp the source face toward the target face using TPS:
-%     fprintf(1, '> Running TPS...\n');
-%     [warp_im, target_offset] = ...
-%         tps_warp_face(ref_face.image ...
-%                      ,ref_face.bbox ...
-%                      ,[source_X, source_Y] ...
-%                      ,target_im ...
-%                      ,target_bbox ...
-%                      ,[target_X,target_Y]);
 
     [source_X, source_Y, target_X, target_Y] = ...
         refine_face_points(ref_face.image, ref_face.bbox, ref_face.x, ref_face.y ...
                           ,target_im, target_bbox, target_X, target_Y ...
                           ,2);
 
-    [scaled_face, target_offset, T, HULL] = ...
-        affine_warp_face(ref_face.image, ref_face.bbox, [source_X, source_Y] ...
-                        ,target_im, target_bbox, [target_X, target_Y]);
+    [T, HULL] = affine_warp_face([source_X, source_Y], [target_X, target_Y]);
+    
+    % Find the target image's dimensions so we can define the limits of 
+    % source image after it is warped
+    [m,n,~]     = size(target_im);
+    output_view = imref2d([m,n], [1,n], [1,m]);
+
+    fprintf(1, '> Output size after warp: %dx%d\n', m, n);
     
     % Create a mask the size of the scaled face:
-    mask = poly2mask(HULL(:,1), HULL(:,2), size(scaled_face, 1), size(scaled_face, 2));
-                    
+    [fn,fm,~] = size(ref_face.image);
+    mask = poly2mask(HULL(:,1), HULL(:,2), fn, fm);
+
     % Warp the scaled face and the mask:
-    warp_scaled_face = imwarp(scaled_face, T);
-    warp_mask        = imwarp(mask, T);
-            
-    % Paste the warped mask into the target image:
-    [m,n,~]   = size(target_im);
-    full_mask = paste(warp_mask, zeros(m,n), target_offset);
-    
-    % Add the warped, scaled face to a blank frame also with the same
-    % dimensions and offset:
-    full_face = paste(warp_scaled_face, zeros(size(target_im)), target_offset);
-    
+    warp_face = imwarp(ref_face.image, T, 'OutputView', output_view);
+    warp_mask = imwarp(mask, T, 'OutputView', output_view);
+
     % Composite everything:
     fprintf(1, '> Compositing...\n');
-    im_out = feather_blend_images(target_im, full_face, full_mask);
-    %im_out = gradient_blend(full_face, target_im, full_mask);
+    %im_out = feather_blend_images(target_im, warp_face, warp_mask);
+    im_out = gradient_blend(warp_face, target_im, warp_mask);
     
     fprintf(1, '> Done\n');
 end

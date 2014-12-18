@@ -12,11 +12,11 @@ basic = load('data/basicset.mat');
 %im = im2double(imread('data/testset/blending/jennifer-lawrences-mystique-new-x-men-spin-off-movie.jpg'));
 im = im2double(imread('data/testset/blending/Michael-Jordan.jpg'));
 %im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
-%im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 
 %% === Pose set ===
 
-% im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
+ im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
 % im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 % im = im2double(imread('data/testset/pose/p1.jpg'));
 % im = im2double(imread('data/testset/pose/p2.jpg'));

@@ -2,6 +2,10 @@
 % Pastes image src in to target at offset in target
 function [out] = paste(src, dest, offset)
 
+    if nargin ~= 3
+        offset = [0,0]; % No offset
+    end
+
     [sm,sn,~] = size(src);
     [dm,dn,~] = size(dest);
     
