@@ -42,13 +42,13 @@ function [out_X1, out_Y1, out_X2, out_Y2] = ...
     %[out_X2, out_Y2] = expand_contract_convex_hull(out_X2, out_Y2, contract_amt);
     
     % If there are additional features, add them:
-%     [XX1, YY1, XX2, YY2] = add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox);
-%     
-%     % Concat:
-%     out_X1 = [out_X1 ; XX1];
-%     out_Y1 = [out_Y1 ; YY1];
-%     out_X2 = [out_X2 ; XX2];
-%     out_Y2 = [out_Y2 ; YY2];
+    [XX1, YY1, XX2, YY2] = add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox);
+    
+    % Concat:
+    out_X1 = [out_X1 ; XX1];
+    out_Y1 = [out_Y1 ; YY1];
+    out_X2 = [out_X2 ; XX2];
+    out_Y2 = [out_Y2 ; YY2];
 end
 
 %%
@@ -177,24 +177,3 @@ function [out_X, out_Y] = expand_contract_convex_hull(X, Y, scale)
     out_Y = Y + (V(:,2) .* scale);
 end
 
-%%
-% Given two sets of matched face points, this function returns the 
-% the convex hull for each face, ensuring that each convex hull consists
-% of the same number of points
-function [out_X1, out_Y1, out_X2, out_Y2] = find_min_convex_hull(X1, Y1, X2, Y2)
-
-    k1 = convhull(X1, Y1);
-    k2 = convhull(X2, Y2);
-    
-    if numel(k1) < numel(k2)
-        out_X1 = X1(k1);
-        out_Y1 = Y1(k1);
-        out_X2 = X2(k1);
-        out_Y2 = Y2(k1);
-    else
-        out_X1 = X1(k2);
-        out_Y1 = Y1(k2);
-        out_X2 = X2(k2);
-        out_Y2 = Y2(k2);
-    end
-end

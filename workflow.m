@@ -23,7 +23,7 @@ data  = load('fitw_detect/face_p146_small.mat');
 model = data.model;
 
 % Detect the face in the target image:
-[target_X, target_Y, target_bbox, target_orientation] = detect_faces(target_im, model, 0.2);
+[target_X, target_Y, target_bbox, target_orientation] = detect_faces(target_im, model);
 
 num_faces = numel(target_orientation);
 
@@ -35,7 +35,21 @@ for i=1:num_faces
     ref_faces{i} = find_reference_face(target_orientation(i,:));
 end
 
-%% (3)
+%% (3.0)
+
+source_XX = cell(num_faces,1);
+source_YY = cell(num_faces,1);
+target_XX = cell(num_faces,1);
+target_YY = cell(num_faces,1);
+
+for i=1:num_faces
+    [source_XX{1},source_YY{1}] = circle_face_features(ref_faces{i}.x, ref_faces{i}.y);
+    [target_XX{1},target_YY{1}] = circle_face_features(target_X(:,1), target_Y(:,1));
+    [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
+       find_min_convex_hull(source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i});
+end
+
+%% (3.1)
 
 source_XX = cell(num_faces,1);
 source_YY = cell(num_faces,1);
@@ -44,15 +58,27 @@ target_YY = cell(num_faces,1);
 
 for i=1:num_faces
     [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
-        refine_face_points(ref_face.image, ref_face.bbox, ref_face.x, ref_face.y ...
+        refine_face_points(ref_faces{i}.image, ref_faces{i}.bbox, ref_faces{i}.x, ref_faces{i}.y ...
                           ,target_im, target_bbox, target_X(:,i), target_Y(:,i));
 end
 
 %% Visualize (3)
 
+i = 1;
+
+imshow(ref_faces{i}.image);
+hold on;
+plot(ref_faces{i}.x, ref_faces{i}.y, 'o', 'Color', 'r');
+plot(source_XX{i}, source_YY{i}, 'o', 'Color', 'g');
+
+%%
+
+i = 1;
+
 imshow(target_im);
 hold on;
-plot(target_XX{1}, target_YY{1}, 'o', 'Color', 'g');
+plot(target_X(:,1), target_Y(:,1), 'o', 'Color', 'r');
+plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'g');
 
 %% (4)
 
@@ -61,7 +87,7 @@ HULL = cell(num_faces, 1);
 
 for i=1:num_faces
     [T{i}, HULL{i}] = ...
-        affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], 10);
+        affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], -1);
 end
 
 %% (5)
