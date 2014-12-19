@@ -38,8 +38,8 @@ function [out_X1, out_Y1, out_X2, out_Y2] = ...
     [out_X2, out_Y2] = snap_to_edges(E2, [out_X2, out_Y2], snap_radius);
     
     % Contract the convex hull of each face by 25% to get a tighter fit
-    %[out_X1, out_Y1] = expand_contract_convex_hull(out_X1, out_Y1, contract_amt);
-    %[out_X2, out_Y2] = expand_contract_convex_hull(out_X2, out_Y2, contract_amt);
+    %[out_X1, out_Y1] = expand_contract(out_X1, out_Y1, contract_amt);
+    %[out_X2, out_Y2] = expand_contract(out_X2, out_Y2, contract_amt);
     
     % If there are additional features, add them:
     [XX1, YY1, XX2, YY2] = add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox);
@@ -157,23 +157,3 @@ function [cx,cy] = bbox_centroid(bbox)
     cx = floor((bbox(1) + bbox(3)) * 0.5);
     cy = floor((bbox(2) + bbox(4)) * 0.5);
 end
-
-% Given a list of (i,j) points defining a convex hull, this function will
-% contract the shape towards its centroid by some given percentage amount
-%
-% X     =
-% Y     =
-% scale =
-function [out_X, out_Y] = expand_contract_convex_hull(X, Y, scale)
-    cx    = mean(X); % Centroid x-component
-    cy    = mean(Y); % Centroid y-component
-    vx    = cx - X;  % Vector x-component
-    vy    = cy - Y;  % Vector y-component
-    V     = [vx, vy];
-    for i=1:size(V,1)
-        V(i,:) = V(i,:) ./ norm(V(i,:));
-    end
-    out_X = X + (V(:,1) .* scale);
-    out_Y = Y + (V(:,2) .* scale);
-end
-

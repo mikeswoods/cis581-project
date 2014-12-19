@@ -6,16 +6,12 @@
 % target_XY        = Target face (x,y) points
 % ransac_threshold = RANSAC threshold; default is 3.0. If -1, no RANSAC
 %                    will be used
-function [T, HULL] = affine_warp_face(source_XY, target_XY, ransac_threshold) 
+function [T] = affine_warp_face(source_XY, target_XY, ransac_threshold) 
 
     if nargin ~= 3
         ransac_threshold = 3.0;
     end
 
-    % Compute the convex hull of the scaled face:
-    k    = convhull(source_XY(:,1), source_XY(:,2));
-    HULL = [source_XY(k,1), source_XY(k,2)];
-    
     % Run RANSAC to remove outliers if ransac_threshold > 0
     if ransac_threshold > 0
         fprintf(1, '> affine_warp_face: Using RANSAC threshold %f\n', ransac_threshold);

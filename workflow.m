@@ -3,13 +3,13 @@
 %target_im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %target_im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 %target_im  = im2double(imread('data/me-small.jpg'));
-target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+%target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im  = im2double(imread('data/hard/0lliviaa.jpg'));
-%target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %target_im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
 %target_im = im2double(imread('data/testset/blending/b1.jpg'));
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
-target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+%target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 %target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 
 %% (1)
@@ -37,16 +37,21 @@ end
 
 %% (3.0)
 
+CIRCLES   = cell(num_faces,1);
 source_XX = cell(num_faces,1);
 source_YY = cell(num_faces,1);
 target_XX = cell(num_faces,1);
 target_YY = cell(num_faces,1);
 
 for i=1:num_faces
-    [source_XX{1},source_YY{1}] = circle_face_features(ref_faces{i}.x, ref_faces{i}.y);
-    [target_XX{1},target_YY{1}] = circle_face_features(target_X(:,1), target_Y(:,1));
+    [source_XX{i},source_YY{i},CIRCLES{i}] = circle_face_features(ref_faces{i}.x, ref_faces{i}.y);
+    [target_XX{i},target_YY{i},~] = circle_face_features(target_X(:,i), target_Y(:,i));
+
     [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
        find_min_convex_hull(source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i});
+
+    [source_XX{i},source_YY{i}] = snap_to_edges(edge(rgb2gray(ref_faces{i}.image), 'canny', 0.1), [source_XX{i},source_YY{i}], 10);
+    [target_XX{i},target_YY{i}] = snap_to_edges(edge(rgb2gray(target_im), 'canny', 0.1), [target_XX{i},target_YY{i}], 10);
 end
 
 %% (3.1)
@@ -82,12 +87,10 @@ plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'g');
 
 %% (4)
 
-T    = cell(num_faces, 1);
-HULL = cell(num_faces, 1);
+T = cell(num_faces, 1);
 
 for i=1:num_faces
-    [T{i}, HULL{i}] = ...
-        affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], -1);
+    T{i} = affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], 4);
 end
 
 %% (5)
@@ -104,7 +107,7 @@ warp_mask = cell(num_faces, 1);
 for i=1:num_faces
     % Create a mask the size of the scaled face:
     [fn,fm,~] = size(ref_faces{i}.image);
-    mask{i} = poly2mask(HULL{i}(:,1), HULL{i}(:,2), fn, fm);
+    mask{i} = create_circle_mask(CIRCLES{i}, fn, fm);
 
     % Warp the scaled face and the mask:
     warp_face{i} = imwarp(ref_faces{i}.image, T{i}, 'OutputView', output_view);
@@ -125,6 +128,7 @@ imshow([warp_face{1}, WARP_MASK]);
 im_out = target_im;
 for i=1:num_faces
     im_out = feather_blend_images(im_out, warp_face{i}, warp_mask{i});
+    %im_out = gradient_blend(warp_face{i}, im_out, warp_mask{i});
 end
 
 imshow(im_out)
