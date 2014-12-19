@@ -3,9 +3,9 @@
 %target_im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %target_im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 %target_im  = im2double(imread('data/me-small.jpg'));
-%target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im  = im2double(imread('data/hard/0lliviaa.jpg'));
-target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+%target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %target_im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
 %target_im = im2double(imread('data/testset/blending/b1.jpg'));
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
