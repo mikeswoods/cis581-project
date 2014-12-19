@@ -20,12 +20,25 @@ function [H,inlier_ind] = ransac(y1, x1, y2, x2, thresh)
         error('numel(y1) ~= numel(x1) && numel(y2) ~= numel(x2)');
     end
     
-    N = 7500;
+    N = 10000;
     k = numel(x1);
-    mostPassing = 0;
+    most_passing = 0;
+    i = 0;
     
-    for i=1:N
+    % The amount of good to try to actually find
+    try_to_keep = floor(size(y1, 1) * 0.75);
+    
+    while true
 
+        if i > N
+            fprintf('> RANSAC: Exhausted max iterations (%d)!\n', N);
+            break;
+        end
+        
+        if most_passing >= try_to_keep
+            break;
+        end
+        
         % Pick 4 indices at random
         PICK = randi([1, k], 1, 4);
 
@@ -44,14 +57,16 @@ function [H,inlier_ind] = ransac(y1, x1, y2, x2, thresh)
         good   = SSD < thresh;
         passed = nnz(good);
         
-        if passed > mostPassing
-            mostPassing = passed;
+        if passed > most_passing
+            most_passing = passed;
             inlier_ind  = good;
         end
+        
+        i = i + 1;
     end
 
     fprintf(1, 'Estimated homography: threshold=%d, passing features = %d\n' ...
-             , thresh, mostPassing);
+             , thresh, most_passing);
     inlier_ind = find(inlier_ind);
     
     % Finally, compute a more accurate homography using all of the inliers:

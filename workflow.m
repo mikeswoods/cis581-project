@@ -9,8 +9,8 @@ target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
 %target_im = im2double(imread('data/testset/blending/b1.jpg'));
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
-%target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
-target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
+target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+%target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 
 %% (1)
 
@@ -52,7 +52,7 @@ end
 
 imshow(target_im);
 hold on;
-plot(target_XX, target_YY, 'o', 'Color', 'g');
+plot(target_XX{1}, target_YY{1}, 'o', 'Color', 'g');
 
 %% (4)
 
@@ -60,7 +60,8 @@ T    = cell(num_faces, 1);
 HULL = cell(num_faces, 1);
 
 for i=1:num_faces
-    [T{i}, HULL{i}] = affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}]);
+    [T{i}, HULL{i}] = ...
+        affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], 10);
 end
 
 %% (5)
@@ -84,6 +85,15 @@ for i=1:num_faces
     warp_mask{i} = imwarp(mask{i}, T{i}, 'OutputView', output_view);
 end
 
+%% Visualize (5)
+[m,n] = size(warp_mask{1});
+WARP_MASK = zeros(m, n, 3);
+WARP_MASK(:,:,1) = warp_mask{1};
+WARP_MASK(:,:,2) = warp_mask{1};
+WARP_MASK(:,:,3) = warp_mask{1};
+
+imshow([warp_face{1}, WARP_MASK]);
+
 %% (6)
  
 im_out = target_im;
@@ -92,11 +102,6 @@ for i=1:num_faces
 end
 
 imshow(im_out)
-
-%% Plot the raw points returned by detect_faces
-%ref_face = rescale_face(im, find_reference_face(ORIENTATION), model, 0.2);
-ref_face = find_reference_face(ORIENTATION);
-CHK = convhull(ref_face.x, ref_face.y);
 
 %% Show the points on the reference face along with the bounding box:
 imshow(ref_face.image);
