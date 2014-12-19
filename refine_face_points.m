@@ -29,46 +29,35 @@ function [out_X1, out_Y1, out_X2, out_Y2] = ...
     % the convex hull with a larger number of points and apply the same
     % indices to [X1,Y1] and [X2,Y2]
     [out_X1, out_Y1, out_X2, out_Y2] = find_min_convex_hull(X1, Y1, X2, Y2);
+
+    % Next, snap the face points to the closest edge:
+    E1 = edge(rgb2gray(face1_im), 'canny', edge_threshold);
+    [out_X1, out_Y1] = snap_to_edges(E1, [out_X1, out_Y1], snap_radius);
+    
+    E2 = edge(rgb2gray(face2_im), 'canny', edge_threshold);
+    [out_X2, out_Y2] = snap_to_edges(E2, [out_X2, out_Y2], snap_radius);
     
     % Contract the convex hull of each face by 25% to get a tighter fit
-%     [out_X1, out_Y1] = expand_contract_convex_hull(out_X1, out_Y1, -5.0);
-%     [out_X2, out_Y2] = expand_contract_convex_hull(out_X2, out_Y2, -5.0);
-%     
-%     % Next, snap the face points to the closest edge:
-%     E1 = edge(rgb2gray(face1_im), 'canny', edge_threshold);
-%     [out_X1, out_Y1] = snap_to_edges(E1, [out_X1, out_Y1], snap_radius);
-%     
-%     E2 = edge(rgb2gray(face2_im), 'canny', edge_threshold);
-%     [out_X2, out_Y2] = snap_to_edges(E2, [out_X2, out_Y2], snap_radius);
-    
-    % Contract the convex hull of each face by 25% to get a tighter fit
-    [out_X1, out_Y1] = expand_contract_convex_hull(out_X1, out_Y1, contract_amt);
-    [out_X2, out_Y2] = expand_contract_convex_hull(out_X2, out_Y2, contract_amt);
+    %[out_X1, out_Y1] = expand_contract_convex_hull(out_X1, out_Y1, contract_amt);
+    %[out_X2, out_Y2] = expand_contract_convex_hull(out_X2, out_Y2, contract_amt);
     
     % If there are additional features, add them:
-    [XX1, YY1, XX2, YY2] = ...
-       add_common_landmarks(face1_im, face1_bbox, X1, Y1 ...
-                           ,face2_im, face2_bbox, X2, Y2);
-    
-    % Concat:
-    out_X1 = [out_X1 ; XX1];
-    out_Y1 = [out_Y1 ; YY1];
-    out_X2 = [out_X2 ; XX2];
-    out_Y2 = [out_Y2 ; YY2];
+%     [XX1, YY1, XX2, YY2] = add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox);
+%     
+%     % Concat:
+%     out_X1 = [out_X1 ; XX1];
+%     out_Y1 = [out_Y1 ; YY1];
+%     out_X2 = [out_X2 ; XX2];
+%     out_Y2 = [out_Y2 ; YY2];
 end
 
 %%
 % face1_im   =
 % face1_bbox =
-% X1         =
-% Y1         = 
 % face2_im   =
 % face2_bbox =
-% X2         =
-% Y1         = 
 function [out_X1, out_Y1, out_X2, out_Y2] = ...
-    add_common_landmarks(face1_im, face1_bbox, X1, Y1 ...
-                        ,face2_im, face2_bbox, X2, Y2)
+    add_common_landmarks(face1_im, face1_bbox, face2_im, face2_bbox)
     out_X1 = [];
     out_Y1 = [];
     out_X2 = [];
@@ -159,60 +148,7 @@ function [out_X1, out_Y1, out_X2, out_Y2] = ...
     out_X1 = [out_X1 ; FaceCenter_P(1)];
     out_Y1 = [out_Y1 ; FaceCenter_P(2)];
     out_X2 = [out_X2 ; FaceCenter_Q(1)];
-    out_Y2 = [out_Y2 ; FaceCenter_Q(2)];
-    
-    % Find two cheek points on each face:
-    Leftmost_P                      = leftmost_point(X1, Y1);
-    Rightmost_P                     = rightmost_point(X1, Y1);
-    BetweenLeftEyeAndMouth_P        = mean([LeftEyeCenter_P; MouthCenter_P], 1);
-    BetweenRightEyeAndMouth_P       = mean([RightEyeCenter_P; MouthCenter_P], 1);
-    BetweenLeftMostAndFaceCenter_P  = mean([Leftmost_P ; FaceCenter_P], 1);
-    BetweenRightMostAndFaceCenter_P = mean([Rightmost_P ; FaceCenter_P], 1);
-    
-    LeftCheekP = [BetweenLeftMostAndFaceCenter_P(1), BetweenLeftEyeAndMouth_P(2)];
-    out_X1 = [out_X1 ; LeftCheekP(1)];
-    out_Y1 = [out_Y1 ; LeftCheekP(2)];
-    RightCheekP = [BetweenRightMostAndFaceCenter_P(1), BetweenRightEyeAndMouth_P(2)];
-    out_X1 = [out_X1 ; RightCheekP(1)];
-    out_Y1 = [out_Y1 ; RightCheekP(2)];
-    
-    Leftmost_Q                      = leftmost_point(X2, Y2);
-    Rightmost_Q                     = rightmost_point(X2, Y2);
-    BetweenLeftEyeAndMouth_Q        = mean([LeftEyeCenter_Q; MouthCenter_Q], 1);
-    BetweenRightEyeAndMouth_Q       = mean([RightEyeCenter_Q; MouthCenter_Q], 1);
-    BetweenLeftMostAndFaceCenter_Q  = mean([Leftmost_Q ; FaceCenter_Q], 1);
-    BetweenRightMostAndFaceCenter_Q = mean([Rightmost_Q ; FaceCenter_Q], 1);
-    
-    LeftCheekQ = [BetweenLeftMostAndFaceCenter_Q(1), BetweenLeftEyeAndMouth_Q(2)];
-    out_X2 = [out_X2 ; LeftCheekQ(1)];
-    out_Y2 = [out_Y2 ; LeftCheekQ(2)];
-    RightCheekQ = [BetweenRightMostAndFaceCenter_Q(1), BetweenRightEyeAndMouth_Q(2)];
-    out_X2 = [out_X2 ; RightCheekQ(1)];
-    out_Y2 = [out_Y2 ; RightCheekQ(2)];
-end
-
-%% Find the left most point in the face
-function [L] = leftmost_point(X, Y)
-    [~,I] = min(X);
-    L     = [X(I), Y(I)];
-end
-
-%% Find the right most point in the face
-function [L] = rightmost_point(X, Y)
-    [~,I] = max(X);
-    L     = [X(I), Y(I)];
-end
-
-%% Find the highest most point in the face
-function [L] = highest_point(X, Y)
-    [~,I] = min(Y);
-    L     = [X(I), Y(I)];
-end
-
-%% Find the highest most point in the face
-function [L] = lowest_point(X, Y)
-    [~,I] = max(Y);
-    L     = [X(I), Y(I)];
+    out_Y2 = [out_Y2 ; FaceCenter_Q(2)]; 
 end
 
 %%
@@ -250,7 +186,7 @@ function [out_X1, out_Y1, out_X2, out_Y2] = find_min_convex_hull(X1, Y1, X2, Y2)
     k1 = convhull(X1, Y1);
     k2 = convhull(X2, Y2);
     
-    if numel(k1) > numel(k2)
+    if numel(k1) < numel(k2)
         out_X1 = X1(k1);
         out_Y1 = Y1(k1);
         out_X2 = X2(k1);

@@ -93,9 +93,9 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
         ORIENTATION(i,:) = posemap(bs(i).c);
     end
 
-    % We can get multiple faces, but for now, keep only one:
-    X   = X(:,1);
-    Y   = Y(:,1);
-    BOX = BOX(1,:);
-    ORIENTATION = ORIENTATION(1,:);
+%     % We can get multiple faces, but for now, keep only one:
+%     X   = X(:,1);
+%     Y   = Y(:,1);
+%     BOX = BOX(1,:);
+%     ORIENTATION = ORIENTATION(1,:);
 end
