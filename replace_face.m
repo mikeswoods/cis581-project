@@ -23,6 +23,13 @@ function [im_out] = replace_face(target_im, max_faces)
     fprintf(1, '> Detecting face in target image...\n');
     [target_X, target_Y, target_bbox, target_orientation] = detect_faces(target_im, model);
     
+    
+    figure; imshow(target_im); hold on;
+    labels = cellstr( num2str([1:68]') );
+    plot(target_X, target_Y, 'rx')
+    text(target_X, target_Y, labels, 'VerticalAlignment','bottom', ...
+                             'HorizontalAlignment','right')
+    hold off;
     num_faces = numel(target_orientation);
     fprintf(1, '> Found %d faces', num_faces);
     
