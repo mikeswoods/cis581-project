@@ -118,8 +118,8 @@ function [im_out] = replace_face(target_im, max_faces)
         if abs(pitch_angle) > pitch_threshold
             fprintf('> Target pitch |%f| over threshold (%f deg.) ; rotating...\n', pitch_angle, pitch_threshold);
         
-            warp_face{i} = rotate_around(warp_face{i}, target_center(2), target_center(1), pitch_angle * 0.5, 'bicubic');
-            warp_mask{i} = rotate_around(warp_mask{i}, target_center(2), target_center(1), pitch_angle * 0.5, 'bicubic');
+            warp_face{i} = rotate_around(warp_face{i}, target_center(2), target_center(1), pitch_angle, 'bicubic');
+            warp_mask{i} = rotate_around(warp_mask{i}, target_center(2), target_center(1), pitch_angle, 'bicubic');
         
         else
             fprintf('> Target pitch under threshold (%f deg.) ; no rotation needed\n', pitch_threshold);

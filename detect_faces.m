@@ -80,22 +80,29 @@ function [X,Y,BOX,ORIENTATION] = detect_faces(inputImage, model, nms_threshold, 
     end
 
     % Dimension everything:
-    M           = numel(bs);
+    M = 0;
+    % Only keep the templates that contain 68 points or more
+    good = zeros(numel(bs), 1);
+    for k=1:numel(bs)
+        if size(bs(k).xy, 1) >= 68
+            M = M + 1;
+            good(k) = 1;
+        end
+    end
+
     num_pts     = size(bs(1).xy, 1);
     X           = zeros(num_pts, M);
     Y           = zeros(num_pts, M);
     BOX         = zeros(M, 4);
     ORIENTATION = zeros(M,1);
-    for i=1:M
-        X(:,i)           = (bs(i).xy(:,1) + bs(i).xy(:,3)) ./ 2;
-        Y(:,i)           = (bs(i).xy(:,2) + bs(i).xy(:,4)) ./ 2;
-        BOX(i,:)         = [min(X(:,i)), min(Y(:,i)), max(X(:,i)), max(Y(:,i))];
-        ORIENTATION(i,:) = posemap(bs(i).c);
+    i           = 1;
+    for k=1:numel(bs)
+        if good(k)
+            X(:,i)           = (bs(k).xy(:,1) + bs(k).xy(:,3)) ./ 2;
+            Y(:,i)           = (bs(k).xy(:,2) + bs(k).xy(:,4)) ./ 2;
+            BOX(i,:)         = [min(X(:,i)), min(Y(:,i)), max(X(:,i)), max(Y(:,i))];
+            ORIENTATION(i,:) = posemap(bs(i).c);
+            i = i + 1;
+        end
     end
-
-%     % We can get multiple faces, but for now, keep only one:
-%     X   = X(:,1);
-%     Y   = Y(:,1);
-%     BOX = BOX(1,:);
-%     ORIENTATION = ORIENTATION(1,:);
 end

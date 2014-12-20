@@ -15,10 +15,10 @@ im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
 
 im = im2double(imread('data/hard/0b4e3684ebff3455f471bb82a0173f48.jpg'));
 im = im2double(imread('data/hard/0lliviaa.jpg'));
-%im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
-%im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
-%im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
-%im = im2double(imread('data/hard/69daf49a8beb63dc35bf65b4e408cde9.jpg'));
+im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
+im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
+im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
+im = im2double(imread('data/hard/69daf49a8beb63dc35bf65b4e408cde9.jpg'));
 %im = im2double(imread('data/hard/314eeaedbe5732558841972afdbaf32f.jpg'));
 %im = im2double(imread('data/hard/beard-champs4.jpg'));
 %im = im2double(imread('data/hard/jennifer_xmen.jpg'));
@@ -36,15 +36,13 @@ im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.j
 %im = im2double(imread('data/testset/blending/Michael-Jordan.jpg'));
 %im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
-%im = im2double(imread('data/hard/0b4e3684ebff3455f471bb82a0173f48.jpg'));
-%im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 
 %% === Pose set ===
-% im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
- im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
+%im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 % im = im2double(imread('data/testset/pose/p1.jpg'));
 % im = im2double(imread('data/testset/pose/p2.jpg'));
-%im = im2double(imread('data/testset/pose/Pepper-and-Tony-tony-stark-and-pepper-potts-9679158-1238-668.jpg'));
+im = im2double(imread('data/testset/pose/Pepper-and-Tony-tony-stark-and-pepper-potts-9679158-1238-668.jpg'));
 %im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
 %im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 
