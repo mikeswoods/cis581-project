@@ -9,9 +9,9 @@
 function [mask] = create_circle_mask(circles, n, m)
 
     mask = zeros(n, m);
-    f    = fieldnames(circles);
+    f    = {'LeftEye', 'RightEye', 'Nose', 'Mouth'};
     for i=1:numel(f)
-        circle = circles.(char(f(i)));
+        circle = circles.(char(f{i}));
         mask = max(mask, imfill(poly2mask(circle(:,1), circle(:,2), n, m), 'holes'));
     end
     

@@ -1,20 +1,20 @@
 %% == Easy set ===
 
-im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
-im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
-%im = im2double(imread('data/easy/1407162060_59511.jpg'));
-%im = im2double(imread('data/easy/bc.jpg'));
+% im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
+% im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
+% im = im2double(imread('data/easy/1407162060_59511.jpg'));
+% im = im2double(imread('data/easy/bc.jpg'));
 im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
-%im = im2double(imread('data/easy/inception-shared-dreaming.jpg'));
-%im = im2double(imread('data/easy/Iron-Man-Tony-Stark-the-avengers-29489238-2124-2560.jpg'));
-%im = im2double(imread('data/easy/iu.jpg'));
-%im = im2double(imread('data/easy/jennifer.jpg'));
-%im = im2double(imread('data/easy/yao.jpg'));
+% im = im2double(imread('data/easy/inception-shared-dreaming.jpg'));
+% im = im2double(imread('data/easy/Iron-Man-Tony-Stark-the-avengers-29489238-2124-2560.jpg'));
+% im = im2double(imread('data/easy/iu.jpg'));
+% im = im2double(imread('data/easy/jennifer.jpg'));
+% im = im2double(imread('data/easy/yao.jpg'));
 
 %% == Hard set ===
 
-%im = im2double(imread('data/hard/0b4e3684ebff3455f471bb82a0173f48.jpg'));
-%im = im2double(imread('data/hard/0lliviaa.jpg'));
+im = im2double(imread('data/hard/0b4e3684ebff3455f471bb82a0173f48.jpg'));
+im = im2double(imread('data/hard/0lliviaa.jpg'));
 %im = im2double(imread('data/hard/4b5d69173e608408ecf97df87563fd34.jpg'));
 %im = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %im = im2double(imread('data/hard/53e34a746d54adb574ab169d624ccd0a.jpg'));
@@ -27,7 +27,7 @@ im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
 
 %% === Blending set ===
 
-%im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
+im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %im = im2double(imread('data/testset/blending/060610-beard-championships-bend-stroomer-0002.jpg'));
 %im = im2double(imread('data/testset/blending/b1.jpg'));
 %im = im2double(imread('data/testset/blending/bc.jpg'));
@@ -41,7 +41,7 @@ im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
 
 %% === Pose set ===
 % im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
-% im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+ im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 % im = im2double(imread('data/testset/pose/p1.jpg'));
 % im = im2double(imread('data/testset/pose/p2.jpg'));
 %im = im2double(imread('data/testset/pose/Pepper-and-Tony-tony-stark-and-pepper-potts-9679158-1238-668.jpg'));

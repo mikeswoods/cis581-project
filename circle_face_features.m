@@ -15,7 +15,9 @@
 % face_out_Y = Face output, y-components
 % circles    = A struct, with fields 'LeftEye', 'RightEye', 'Nose' and
 %              'Mouth', where the values are an Nx2 matrix of (x,y)
-%              circle points
+%              circle points, and 'LeftEyeCenter', 'RightEyeCenter', 
+%              'NoseCenter' and 'MouthCenter' define the centroids of the
+%              given features
 function [face_out_X, face_out_Y, circles] = circle_face_features(face_in_X, face_in_Y)
     
     LEFT_EYE_INDEX  = [11, 12, 13, 14];
@@ -34,7 +36,7 @@ function [face_out_X, face_out_Y, circles] = circle_face_features(face_in_X, fac
     % radius for each circle over the eyes: 
     eye_radius   = 0.45 * euclidean_dist([left_eye ; right_eye]);
     nose_radius  = 0.5 * min([euclidean_dist([left_eye ; nose]), euclidean_dist([right_eye ; nose])]);
-    mouth_radius = 0.8 * euclidean_dist([nose ; mouth]);
+    mouth_radius = 0.9 * euclidean_dist([nose ; mouth]);
     
     % Circle over the left eye--make the radius halfway between each eye
     % centroid
@@ -57,7 +59,11 @@ function [face_out_X, face_out_Y, circles] = circle_face_features(face_in_X, fac
     circles    = struct('LeftEye', left_eye_circle ...
                        ,'RightEye', right_eye_circle ...
                        ,'Nose', nose_circle ...
-                       ,'Mouth', mouth_circle);
+                       ,'Mouth', mouth_circle ...
+                       ,'LeftEyeCenter', left_eye ...
+                       ,'RightEyeCenter', right_eye ...
+                       ,'NoseCenter', nose ...
+                       ,'MouthCenter', mouth);
 end
 
 %% Euclidean distance

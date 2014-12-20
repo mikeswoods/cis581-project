@@ -11,8 +11,10 @@
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
 %target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 %target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
-target_im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
+%target_im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
 %target_im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
+%target_im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
+target_im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
 
 %% (1)
 
@@ -39,15 +41,17 @@ end
 
 %% (3.0)
 
-CIRCLES   = cell(num_faces,1);
+source_features = cell(num_faces,1);
 source_XX = cell(num_faces,1);
 source_YY = cell(num_faces,1);
+
+target_features = cell(num_faces,1);
 target_XX = cell(num_faces,1);
 target_YY = cell(num_faces,1);
 
 for i=1:num_faces
-    [source_XX{i},source_YY{i},CIRCLES{i}] = circle_face_features(ref_faces{i}.x, ref_faces{i}.y);
-    [target_XX{i},target_YY{i},~] = circle_face_features(target_X(:,i), target_Y(:,i));
+    [source_XX{i},source_YY{i},source_features{i}] = circle_face_features(ref_faces{i}.x, ref_faces{i}.y);
+    [target_XX{i},target_YY{i},target_features{i}] = circle_face_features(target_X(:,i), target_Y(:,i));
 
     [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
        find_min_convex_hull(source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i});
@@ -97,11 +101,23 @@ warp_mask = cell(num_faces, 1);
 for i=1:num_faces
     % Create a mask the size of the scaled face:
     [fn,fm,~] = size(ref_faces{i}.image);
-    mask{i} = create_circle_mask(CIRCLES{i}, fn, fm);
+    mask{i} = create_circle_mask(source_features{i}, fn, fm);
 
+    % Find the center of the target face region:
+    target_center = mean([target_XX{i}, target_YY{i}]);
+    pitch_angle   = estimate_pitch(target_features{i}.LeftEyeCenter, target_features{i}.RightEyeCenter);
+    
+    disp(pitch_angle)
+    
     % Warp the scaled face and the mask:
     warp_face{i} = imwarp(ref_faces{i}.image, T{i}, 'OutputView', output_view);
     warp_mask{i} = imwarp(mask{i}, T{i}, 'OutputView', output_view);
+    
+    % Rotate the mask and warped image with the pitch angle:
+    if abs(pitch_angle) > 10
+        warp_face{i} = rotate_around(warp_face{i}, target_center(2), target_center(1), -angle, 'bicubic');
+        warp_mask{i} = rotate_around(warp_mask{i}, target_center(2), target_center(1), -angle, 'bicubic');
+    end
 end
 
 %% Visualize (5)
@@ -116,39 +132,51 @@ imshow(WARP_MASK);
 %%
  
 im_out = target_im;
-k = convhull(target_X, target_Y);
-target_mask = poly2mask(target_X(k,:), target_Y(k,:), size(im_out, 1), size(im_out, 2));
 
 for i=1:num_faces
+
+    k = convhull(target_X(:,i), target_Y(:,i));
+    
+    [TX,TY] = snap_to_edges(edge(rgb2gray(target_im), 'canny', 0.2), [target_X(k,i), target_Y(k,i)], 10);
+    
+    target_mask = poly2mask(TX, TY, size(im_out, 1), size(im_out, 2));
+    
     im_out = feather_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
-    im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
+    %im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
 end
+
+imshow(im_out);
+
+%%
 
 imshow(im_out);
 hold on;
 for i=1:num_faces
 
-%    ST = xform_points([source_XX{i}, source_YY{i}], T{i}.T);
-%    plot(ST(:,1), ST(:,2), 'o', 'Color', 'b');
-%     
-%    k = convhull(target_X(:,i), target_Y(:,i));
-%    plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'r');
-%    
-%    plot(target_X(k,i), target_Y(k,i), 'o', 'Color', 'g');
-%    plot(target_X(k,i), target_Y(k,i), 'g-');
+    % Plot the eyes:
+    F = target_features{i};
+    left_eye  = mean(F.LeftEye);
+    right_eye = mean(F.RightEye);
+    plot(left_eye(:,1), left_eye(:,2), '+', 'Color', 'g');
+    plot(right_eye(:,1), right_eye(:,2), '+', 'Color', 'g');
+    
+    disp(estimate_pitch(left_eye, right_eye));
+    
+    ST = xform_points([source_XX{i}, source_YY{i}], T{i}.T);
+    k = convhull(target_X(:,i), target_Y(:,i));
+    
+    plot(ST(:,1), ST(:,2), 'o', 'Color', 'b');
+
+    C1 = mean([target_XX{i}, target_YY{i}]);
+    C2 = mean([target_X(k,i), target_Y(k,i)]);
+    plot(C1(:,1), C1(:,2), '+', 'Color', 'k');
+    plot(C2(:,1), C2(:,2), '+', 'Color', 'w');
+    
+
+    plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'r');
+    plot(target_X(k,i), target_Y(k,i), 'o', 'Color', 'g');
+    plot(target_X(k,i), target_Y(k,i), 'g-');
 end
-
-%% Match and plot feature points between faces:
-
-addpath('ransac');
-
-[X1,Y1,X2,Y2] = ...
-    refine_face_points(ref_face.image, ref_face.x, ref_face.y, im, X, Y);
-
-[~,inliers] = ransac(Y1, X1, Y2, X2, 1);
-
-showMatchedFeatures(ref_face.image, im, [X1(inliers),Y1(inliers)], [X2(inliers),Y2(inliers)], 'montage');
-%showMatchedFeatures(ref_face.image, im, [X1,Y1], [X2,Y2], 'montage');
 
 %% Test point snapping:
 

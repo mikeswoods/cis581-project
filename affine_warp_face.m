@@ -32,5 +32,5 @@ function [T] = affine_warp_face(source_XY, target_XY, ransac_threshold)
     end
 
     % Construct an affine transformation from the matched points:
-    T = fitgeotrans([SX, SY], [TX, TY], 'affine');
+    T = fitgeotrans([SX, SY], [TX, TY], 'Affine');
 end

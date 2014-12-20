@@ -4,10 +4,6 @@ function [warp_im, target_offset] = tps_warp_face(source_im, source_bbox, source
     
     addpath('tps');
 
-%     [source_X, source_Y, target_X, target_Y] = ...
-%     refine_face_points(ref_face.image, ref_face.bbox, ref_face.x, ref_face.y ...
-%                       ,target_im, target_bbox, target_X, target_Y);
-    
     % Crop the source and target faces
     [source_face, src_crop_bbox]    = imcrop(source_im, bbox_xy_to_wh(source_bbox, 10));
     [target_face, target_crop_bbox] = imcrop(target_im, bbox_xy_to_wh(target_bbox, 10));
