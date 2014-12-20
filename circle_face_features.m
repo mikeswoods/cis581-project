@@ -32,10 +32,9 @@ function [face_out_X, face_out_Y, circles] = circle_face_features(face_in_X, fac
 
     % Commpute the distance between the eye points to determine the
     % radius for each circle over the eyes: 
-    eye_radius   = 0.5 * euclidean_dist([left_eye ; right_eye]);
-
-    nose_radius  = 0.65 * min([euclidean_dist([left_eye ; nose]), euclidean_dist([right_eye ; nose])]);
-    mouth_radius = 1.0 * euclidean_dist([nose ; mouth]);
+    eye_radius   = 0.4 * euclidean_dist([left_eye ; right_eye]);
+    nose_radius  = 0.4 * min([euclidean_dist([left_eye ; nose]), euclidean_dist([right_eye ; nose])]);
+    mouth_radius = 0.75 * euclidean_dist([nose ; mouth]);
     
     % Circle over the left eye--make the radius halfway between each eye
     % centroid

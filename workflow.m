@@ -3,7 +3,7 @@
 %target_im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %target_im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 %target_im  = im2double(imread('data/me-small.jpg'));
-target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+%target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im  = im2double(imread('data/hard/0lliviaa.jpg'));
 %target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %target_im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
@@ -11,6 +11,8 @@ target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
 %target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 %target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
+target_im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
+target_im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 
 %% (1)
 
@@ -50,21 +52,8 @@ for i=1:num_faces
     [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
        find_min_convex_hull(source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i});
 
-    [source_XX{i},source_YY{i}] = snap_to_edges(edge(rgb2gray(ref_faces{i}.image), 'canny', 0.1), [source_XX{i},source_YY{i}], 10);
-    [target_XX{i},target_YY{i}] = snap_to_edges(edge(rgb2gray(target_im), 'canny', 0.1), [target_XX{i},target_YY{i}], 10);
-end
-
-%% (3.1)
-
-source_XX = cell(num_faces,1);
-source_YY = cell(num_faces,1);
-target_XX = cell(num_faces,1);
-target_YY = cell(num_faces,1);
-
-for i=1:num_faces
-    [source_XX{i}, source_YY{i}, target_XX{i}, target_YY{i}] = ...
-        refine_face_points(ref_faces{i}.image, ref_faces{i}.bbox, ref_faces{i}.x, ref_faces{i}.y ...
-                          ,target_im, target_bbox, target_X(:,i), target_Y(:,i));
+    [source_XX{i},source_YY{i}] = snap_to_edges(edge(rgb2gray(ref_faces{i}.image), 'canny', 0.2), [source_XX{i},source_YY{i}], 10);
+    [target_XX{i},target_YY{i}] = snap_to_edges(edge(rgb2gray(target_im), 'canny', 0.2), [target_XX{i},target_YY{i}], 10);
 end
 
 %% Visualize (3)
@@ -82,7 +71,8 @@ i = 1;
 
 imshow(target_im);
 hold on;
-plot(target_X(:,1), target_Y(:,1), 'o', 'Color', 'r');
+k = convhull(target_X(:,i), target_Y(:,i));
+plot(target_X(k,i), target_Y(k,i), 'r-');
 plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'g');
 
 %% (4)
@@ -90,7 +80,7 @@ plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'g');
 T = cell(num_faces, 1);
 
 for i=1:num_faces
-    T{i} = affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], 4);
+    T{i} = affine_warp_face([source_XX{i}, source_YY{i}], [target_XX{i}, target_YY{i}], 8);
 end
 
 %% (5)
@@ -121,23 +111,32 @@ WARP_MASK(:,:,1) = warp_mask{1};
 WARP_MASK(:,:,2) = warp_mask{1};
 WARP_MASK(:,:,3) = warp_mask{1};
 
-imshow([warp_face{1}, WARP_MASK]);
+imshow(WARP_MASK);
 
-%% (6)
+%%
  
 im_out = target_im;
+k = convhull(target_X, target_Y);
+target_mask = poly2mask(target_X(k,:), target_Y(k,:), size(im_out, 1), size(im_out, 2));
+
 for i=1:num_faces
-    im_out = feather_blend_images(im_out, warp_face{i}, warp_mask{i});
-    %im_out = gradient_blend(warp_face{i}, im_out, warp_mask{i});
+    im_out = feather_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
+    %im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
 end
 
-imshow(im_out)
-
-%% Show the points on the reference face along with the bounding box:
-imshow(ref_face.image);
+imshow(im_out);
 hold on;
-plot(ref_face.x, ref_face.y, 'o', 'Color', 'g');
-rectangle('Position', bbox_xy_to_wh(ref_face.bbox, 50), 'EdgeColor', 'g', 'LineWidth', 2);
+for i=1:num_faces
+
+%    ST = xform_points([source_XX{i}, source_YY{i}], T{i}.T);
+%    plot(ST(:,1), ST(:,2), 'o', 'Color', 'b');
+%     
+%    k = convhull(target_X(:,i), target_Y(:,i));
+%    plot(target_XX{i}, target_YY{i}, 'o', 'Color', 'r');
+%    
+%    plot(target_X(k,i), target_Y(k,i), 'o', 'Color', 'g');
+%    plot(target_X(k,i), target_Y(k,i), 'g-');
+end
 
 %% Match and plot feature points between faces:
 

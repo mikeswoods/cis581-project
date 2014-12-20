@@ -1,26 +1,10 @@
-%% Transform, rotating and translating as necessary
-function [XPrime, YPrime] = xform_points(X, Y, rotate, translate)
-
-    if nargin ~= 4
-        translate = [0,0];
-    end
-
-    % Compute the centroid for each point component:
-    n       = size(X,1);
-    C       = repmat([mean(X), mean(Y)], n, 1);
-    XY      = [X,Y];
-    XYPrime = XY - C;
-    theta   = degtorad(rotate);
-    R       = [cos(theta) -sin(theta); 
-               sin(theta) cos(theta)];
+%% Apply the affine transformation in T to all points (x,y) in XY
+%
+function [XYPrime] = xform_points(XY, T)
+    n       = size(XY,1);
+    XY_next = zeros(n, 3);
     for i=1:n
-        XYPrime(i,:) = XYPrime(i,:) * R;
+        XY_next(i,:) = [XY(i,:), 1.0] * T; 
     end
-
-    XYPrime = XYPrime + C;
-    XYPrime = XYPrime  + repmat(translate, n, 1);
-    
-    XPrime = XYPrime(:,1);
-    YPrime = XYPrime(:,2);
+    XYPrime = [XY_next(:,1) ./ XY_next(:,3), XY_next(:,2) ./ XY_next(:,3)];  
 end
-
