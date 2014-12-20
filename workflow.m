@@ -3,24 +3,23 @@
 %target_im  = im2double(imread('data/hard/14b999d49e77c6205a72ca87c2c2e5df.jpg'));
 %target_im  = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 %target_im  = im2double(imread('data/me-small.jpg'));
-%target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
+target_im  = im2double(imread('data/hard/jennifer_xmen.jpg'));
 %target_im  = im2double(imread('data/hard/0lliviaa.jpg'));
 %target_im = im2double(imread('data/testset/blending/Official_portrait_of_Barack_Obama.jpg'));
 %target_im = im2double(imread('data/testset/pose/golden-globes-jennifer-lawrence-0.jpg'));
 %target_im = im2double(imread('data/testset/blending/b1.jpg'));
 %target_im = im2double(imread('data/testset/blending/bc.jpg'));
-%target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
+target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 %target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 %target_im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
 %target_im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 %target_im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
-target_im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
+%target_im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
 
 %% (1)
 
-% Add working paths for TPS and the FITW face detection code:
+% Add working paths for FITW face detection code:
 addpath('fitw_detect');
-addpath('tps');
 
 % FITW training data:
 data  = load('fitw_detect/face_p146_small.mat');
@@ -115,8 +114,8 @@ for i=1:num_faces
     
     % Rotate the mask and warped image with the pitch angle:
     if abs(pitch_angle) > 10
-        warp_face{i} = rotate_around(warp_face{i}, target_center(2), target_center(1), -angle, 'bicubic');
-        warp_mask{i} = rotate_around(warp_mask{i}, target_center(2), target_center(1), -angle, 'bicubic');
+        warp_face{i} = rotate_around(warp_face{i}, target_center(2), target_center(1), pitch_angle, 'bicubic');
+        warp_mask{i} = rotate_around(warp_mask{i}, target_center(2), target_center(1), pitch_angle, 'bicubic');
     end
 end
 
@@ -138,11 +137,12 @@ for i=1:num_faces
     k = convhull(target_X(:,i), target_Y(:,i));
     
     [TX,TY] = snap_to_edges(edge(rgb2gray(target_im), 'canny', 0.2), [target_X(k,i), target_Y(k,i)], 10);
-    
     target_mask = poly2mask(TX, TY, size(im_out, 1), size(im_out, 2));
     
-    im_out = feather_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
-    %im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
+    warp_face{i} = enhance_contrast(warp_face{i});
+    
+    %im_out = feather_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
+    im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
 end
 
 imshow(im_out);

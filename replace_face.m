@@ -137,8 +137,10 @@ function [im_out] = replace_face(target_im, max_faces)
         
         % Composite everything:
         fprintf(1, '> Compositing...\n');
-        im_out = feather_blend_images(im_out, warp_face{i}, final_mask);
-        %im_out = gradient_blend_images(im_out, warp_face{i}, final_mask);
+
+        %im_out = feather_blend_images(im_out, enhance_contrast(warp_face{i}), final_mask);
+        %im_out = gradient_blend_images(im_out, enhance_contrast(warp_face{i}), final_mask);
+        im_out = gradient_blend_images(im_out, warp_face{i}, final_mask);
     end
         
     fprintf(1, '> Done\n');

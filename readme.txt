@@ -3,7 +3,13 @@ cis581-project
 
 CIS581 final project - 2014
 
-==== Resources ====
+==== Setup ===
+
+1) Go into the 'fitw_detect' directory and run the compile.m file.
+2) If 'data/reference_face.mat' does not exist (it should), run 
+   process_reference_images.m from the project base directory
+
+==== Resources an Citations ====
 
 * Code modified from "Gradient Domain Imaging"
 ** http://blog.merza-k.com/gdi

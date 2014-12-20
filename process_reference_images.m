@@ -8,8 +8,6 @@ data  = load('fitw_detect/face_p146_small.mat');
 model = data.model;
 threshold = 0.3;
 
-%%
-
 % -90
 fprintf(1, '-90\n');
 im_minus_90 = im2double(imread('data/reference/minus-90.jpg'));
@@ -101,8 +99,7 @@ im_plus_90 = im2double(imread('data/reference/plus-90.jpg'));
 plus_90 = struct('image', im_plus_90, 'x', X, 'y', Y, 'bbox', bbox, 'orientation', 90);
 clear im_plus_90, clear X; clear Y; clear bbox;
 
-%%
-save('reference_face.mat' ...
+save('data/reference_face.mat' ...
     ,'minus_90' ...
     ,'minus_75' ...
     ,'minus_60' ...
