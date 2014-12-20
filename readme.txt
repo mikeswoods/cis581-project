@@ -9,6 +9,16 @@ CIS581 final project - 2014
 2) If 'data/reference_face.mat' does not exist (it should), run 
    process_reference_images.m from the project base directory
 
+
+==== Test script ====
+
+All images from the easy, hard, blending, pose, and more sets can be 
+replaced and viewed from the test.m file in the project directory.
+
+==== Extra Credit ====
+
+
+
 ==== Resources an Citations ====
 
 * Code modified from "Gradient Domain Imaging"
