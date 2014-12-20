@@ -2,9 +2,9 @@
 
 im = im2double(imread('data/easy/1d198487f39d9981c514f968619e9c91.jpg'));
 im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
-im = im2double(imread('data/easy/1407162060_59511.jpg'));
+%im = im2double(imread('data/easy/1407162060_59511.jpg'));
 %im = im2double(imread('data/easy/bc.jpg'));
-%im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
+im = im2double(imread('data/easy/celebrity-couples-01082011-lead.jpg'));
 %im = im2double(imread('data/easy/inception-shared-dreaming.jpg'));
 %im = im2double(imread('data/easy/Iron-Man-Tony-Stark-the-avengers-29489238-2124-2560.jpg'));
 %im = im2double(imread('data/easy/iu.jpg'));

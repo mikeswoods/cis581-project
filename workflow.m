@@ -12,7 +12,7 @@
 %target_im = im2double(imread('data/testset/pose/Michael_Jordan_Net_Worth.jpg'));
 %target_im = im2double(imread('data/testset/pose/star-trek-2009-sample-003.jpg'));
 target_im = im2double(imread('data/testset/pose/robert-downey-jr-5a.jpg'));
-target_im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
+%target_im = im2double(imread('data/easy/0013729928e6111451103c.jpg'));
 
 %% (1)
 
@@ -121,7 +121,7 @@ target_mask = poly2mask(target_X(k,:), target_Y(k,:), size(im_out, 1), size(im_o
 
 for i=1:num_faces
     im_out = feather_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
-    %im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
+    im_out = gradient_blend_images(im_out, warp_face{i}, target_mask & warp_mask{i});
 end
 
 imshow(im_out);

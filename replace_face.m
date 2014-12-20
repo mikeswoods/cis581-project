@@ -82,8 +82,8 @@ function [im_out] = replace_face(target_im, max_faces)
 
         % Construct a mask for the final blend that is the intersection of
         % the convex hull of the target face:
-        k = convhull(target_X, target_Y);
-        target_mask = poly2mask(target_X(k,:), target_Y(k,:), size(im_out, 1), size(im_out, 2));
+        k = convhull(target_X(:,i), target_Y(:,i));
+        target_mask = poly2mask(target_X(k,i), target_Y(k,i), size(im_out, 1), size(im_out, 2));
 
         % Composite everything:
         fprintf(1, '> Compositing...\n');
