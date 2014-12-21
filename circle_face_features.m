@@ -36,7 +36,7 @@ function [face_out_X, face_out_Y, circles] = circle_face_features(face_in_X, fac
     % radius for each circle over the eyes: 
     eye_radius   = 0.45 * euclidean_dist([left_eye ; right_eye]);
     nose_radius  = 0.75 * min([euclidean_dist([left_eye ; nose]), euclidean_dist([right_eye ; nose])]);
-    mouth_radius = 0.9 * euclidean_dist([nose ; mouth]);
+    mouth_radius = 1.0 * euclidean_dist([nose ; mouth]);
     
     % Circle over the left eye--make the radius halfway between each eye
     % centroid

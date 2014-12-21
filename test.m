@@ -112,7 +112,7 @@ images = {'data/testset/pose/golden-globes-jennifer-lawrence-0.jpg' ...
     ,'data/testset/pose/robert-downey-jr-5a.jpg' ...
     ,'data/testset/pose/star-trek-2009-sample-003.jpg'};
 
-for i=1:1
+for i=1:numel(images)
     fprintf(1, '>> Replacing: %s\n', images{i});
     I = replace_face(im2double(imread(images{i})));
     filename = ['final_images/pose/output_', num2str(i), '.png'];
@@ -146,7 +146,7 @@ end
 
 obj = VideoReader('data/testset/video/videoclip.mp4');
 N   = obj.NumberOfFrames;
-for k=124:N
+for k=1:N
     fprintf(1, '>> Rendering frame %d/%d\n', k, N);
     frame    = read(obj, k);
     filename = ['final_images/video/frame_', num2str(k), '.png'];
@@ -157,12 +157,11 @@ end
 
 %% Write the video from the files output above
 
-obj = VideoWriter('data/testset/video/videoclip_replaced.mp4');
+obj = VideoWriter('final_images/video/videoclip_replaced.mp4', 'MPEG-4');
 obj.FrameRate = 10;
+open(obj);
 for k=1:150
     filename = ['final_images/video/frame_', num2str(k), '.png'];
-    im       = imread(filename);
-    frame    = im2frame(im);
-    writeVideo(obj, frame);
+    writeVideo(obj, imread(filename));
 end
 close(obj);
