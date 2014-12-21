@@ -140,4 +140,29 @@ for i=1:numel(images)
     imwrite(I, filename);
 end
 
-%%
+%% ==== Video ====
+
+% Read the video:
+
+obj = VideoReader('data/testset/video/videoclip.mp4');
+N   = obj.NumberOfFrames;
+for k=124:N
+    fprintf(1, '>> Rendering frame %d/%d\n', k, N);
+    frame    = read(obj, k);
+    filename = ['final_images/video/frame_', num2str(k), '.png'];
+    %I = imresize(replace_face(imresize(frame,2)), 0.5);
+    I = replace_face(im2double(frame));
+    imwrite(I, filename);
+end
+
+%% Write the video from the files output above
+
+obj = VideoWriter('data/testset/video/videoclip_replaced.mp4');
+obj.FrameRate = 10;
+for k=1:150
+    filename = ['final_images/video/frame_', num2str(k), '.png'];
+    im       = imread(filename);
+    frame    = im2frame(im);
+    writeVideo(obj, frame);
+end
+close(obj);

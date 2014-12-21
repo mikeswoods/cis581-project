@@ -32,8 +32,15 @@ function [im_out] = replace_face(target_im, max_faces)
 %                              'HorizontalAlignment','right')
 %     hold off;
 
-    num_faces = numel(target_orientation);
-    fprintf(1, '> Found %d faces', num_faces);
+    num_faces = size(target_X, 2);
+    
+    if num_faces == 0
+        fprintf(1, '> No faces found\n');
+        im_out = target_im;
+        return;
+    end
+    
+    fprintf(1, '> Found %d faces\n', num_faces);
     
     num_faces = min([num_faces, max_faces]);
     fprintf(1, '> Replacing %d faces (max=%d)', num_faces, max_faces);
